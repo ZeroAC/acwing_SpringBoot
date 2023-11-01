@@ -1,0 +1,45 @@
+# Compiled bytecode files
+*.class
+
+# Build directories (Maven, Gradle, etc.)
+target/
+build/
+out/
+
+# IDE-specific files and directories (IntelliJ IDEA, Eclipse, NetBeans, etc.)
+.idea/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+
+# Dependency directories
+lib/
+libs/
+
+# OS-specific files
+.DS_Store  # macOS
+Thumbs.db  # Windows
+
+# Logs and other output files
+*.log
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~.nib
+
+# Other common non-source files
+*.csv
+*.dat
+*.json
+*.xml
+*.yml
