@@ -20,10 +20,10 @@ public class BotInfoController {
         List<Map<String, String>> list = new ArrayList<>();
         Map<String, String> kob1 = new HashMap<>();
         kob1.put("name", "jack");
-        kob1.put("score", "1100");
+        kob1.put("rating", "1100");
         Map<String, String> kob2 = new HashMap<>();
         kob2.put("name", "tom");
-        kob2.put("score", "1500");
+        kob2.put("rating", "1500");
         list.add(kob1);
         list.add(kob2);
         return list;
