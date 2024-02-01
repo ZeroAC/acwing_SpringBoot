@@ -1,11 +1,11 @@
 <template lang="">
-  <ContentField> PK </ContentField>
+  <play-ground> </play-ground>
 </template>
 <script>
-import ContentField from "@/components/ContentField";
+import PlayGround from "@/components/PlayGround";
 export default {
   components: {
-    ContentField,
+    PlayGround,
   },
 };
 </script>
