@@ -23,7 +23,7 @@ public class BotInfoController {
         kob1.put("rating", "1100");
         Map<String, String> kob2 = new HashMap<>();
         kob2.put("name", "tom");
-        kob2.put("rating", "1500");
+        kob2.put("rating", "12300");//ctrl+F9 热启动
         list.add(kob1);
         list.add(kob2);
         return list;
