@@ -42,4 +42,5 @@ const step = (timestamp) => {
   last_timestamp = timestamp;
   requestAnimationFrame(step);
 };
+//timestamp 是由 requestAnimationFrame 传给回调函数的，表示回调队列被触发的时间
 requestAnimationFrame(step);
