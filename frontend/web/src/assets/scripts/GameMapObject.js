@@ -8,7 +8,7 @@ export default class GameMapObject extends AcGameObject {
     this.parent = parent;
     this.L = 0; //地图每个格子的边长
     this.rows = 13; //地图行数
-    this.cols = 13; //地图列数
+    this.cols = 14; //地图列数
     this.wallNum = 40; //障碍物数量
   }
   //判断是否连通
@@ -37,15 +37,16 @@ export default class GameMapObject extends AcGameObject {
         }
       }
     }
-    //创建内部障碍物(公平起见，对称放置)，但不能覆盖起点
+    //创建内部障碍物(公平起见，中心对称)，但不能覆盖起点
     for (let i = 0; i < this.wallNum / 2; i++) {
       for (let j = 0; j < 1000; j++) {
         let x = Math.floor(Math.random() * this.rows);
         let y = Math.floor(Math.random() * this.cols);
         if ((x == this.rows - 2 && y == 1) || (x == 1 && y == this.cols - 2))
           continue;
-        if (x != y && !g[x][y] && !g[y][x]) {
-          g[x][y] = g[y][x] = true;
+        // 中心对称 让(x,y)先关于地图中心x轴对称,再关于中心点y轴对称->(x’,y’)
+        if (x != y && !g[x][y] && !g[this.rows - 1 - x][this.cols - 1 - y]) {
+          g[x][y] = g[this.rows - 1 - x][this.cols - 1 - y] = true;
           break;
         }
       }
