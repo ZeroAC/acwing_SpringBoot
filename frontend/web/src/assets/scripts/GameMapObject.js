@@ -1,5 +1,6 @@
 import AcGameObject from "./AcGameObject";
 import Wall from "./Wall";
+import Snake from "./Snake";
 export default class GameMapObject extends AcGameObject {
   constructor(ctx, parent) {
     //画布ctx,游戏板
@@ -73,6 +74,47 @@ export default class GameMapObject extends AcGameObject {
     for (let i = 0; i < 10000; i++) {
       if (this.generate_walls()) break;
     }
+    this.snakes = [
+      //生成蛇0
+      new Snake(
+        { id: 0, r: this.rows - 2, c: 1, color: "#4876ec", speed: 5 },
+        this
+      ),
+      //生成蛇1
+      new Snake(
+        { id: 1, r: 1, c: this.cols - 2, color: "#f94848", speed: 5 },
+        this
+      ),
+    ];
+    this.add_listener(); //监听蛇的移动事件
+  }
+  //检查两条蛇是否均处于静止且都已输入移动指令
+  check_ready() {
+    for (let i = 0; i < this.snakes.length; i++) {
+      if (this.snakes[i].direction == -1) return false;
+      if (this.snakes[i].status != "idle") return false;
+    }
+    return true;
+  }
+  //若蛇已准备好，则让二者一起移动，进入下一回合
+  next_step() {
+    for (const snake of this.snakes) {
+      snake.next_step();
+    }
+  }
+  add_listener() {
+    this.ctx.canvas.focus();
+    const [snake0, snake1] = this.snakes;
+    this.ctx.canvas.addEventListener("keydown", (e) => {
+      if (e.key === "w") snake0.set_direction(0);
+      else if (e.key === "d") snake0.set_direction(1);
+      else if (e.key === "s") snake0.set_direction(2);
+      else if (e.key === "a") snake0.set_direction(3);
+      else if (e.key === "ArrowUp") snake1.set_direction(0);
+      else if (e.key === "ArrowRight") snake1.set_direction(1);
+      else if (e.key === "ArrowDown") snake1.set_direction(2);
+      else if (e.key === "ArrowLeft") snake1.set_direction(3);
+    });
   }
   update_size() {
     //动态更新地图大小
@@ -102,6 +144,9 @@ export default class GameMapObject extends AcGameObject {
 
   render() {
     this.render_background();
+    if (this.check_ready()) {
+      this.next_step();
+    }
   }
 
   update() {
