@@ -43,4 +43,5 @@ const step = (timestamp) => {
   requestAnimationFrame(step);
 };
 //timestamp 是由 requestAnimationFrame 传给回调函数的，表示回调队列被触发的时间
+//一秒60帧
 requestAnimationFrame(step);
