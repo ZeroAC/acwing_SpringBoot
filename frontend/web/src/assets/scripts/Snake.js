@@ -17,6 +17,23 @@ export default class Snake extends AcGameObject {
     this.step = 0; //走了几步 即第几回合
     this.next_cell = null; //蛇头的下一步位置
     this.eps = 1e-2; //允许的误差
+    //蛇的眼睛相关参数
+    this.eye_direction = 0;
+    if (info.id == "1") this.eye_direction = 2; //眼睛初始方向 蛇0向上 蛇1向下
+    this.eye_dx = [
+      // 蛇眼不同方向x偏移量 (从圆心向左向右的偏移量)
+      [-1, 1], //向上,右,左,下
+      [1, 1],
+      [-1, 1],
+      [-1, -1],
+    ];
+    this.eye_dy = [
+      // 蛇眼不同方向y偏移量
+      [-1, -1],
+      [-1, 1],
+      [1, 1],
+      [-1, 1],
+    ];
   }
   //更新蛇的位置状态,进入下一步
   next_step() {
@@ -135,6 +152,19 @@ export default class Snake extends AcGameObject {
           radius * 2
         );
       }
+    }
+
+    //绘制蛇的眼睛
+    ctx.fillStyle = "black";
+    for (let i = 0; i < 2; i++) {
+      const eye_x =
+        (this.cells[0].x + this.eye_dx[this.eye_direction][i] * 0.15) * L;
+      const eye_y =
+        (this.cells[0].y + this.eye_dy[this.eye_direction][i] * 0.15) * L;
+
+      ctx.beginPath();
+      ctx.arc(eye_x, eye_y, L * 0.05, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
   update() {
