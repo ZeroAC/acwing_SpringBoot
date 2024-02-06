@@ -38,6 +38,7 @@ export default class Snake extends AcGameObject {
   //更新蛇的位置状态,进入下一步
   next_step() {
     const d = this.direction;
+    this.eye_direction = d;
     this.next_cell = new Cell(
       this.cells[0].r + this.dr[d],
       this.cells[0].c + this.dc[d]
