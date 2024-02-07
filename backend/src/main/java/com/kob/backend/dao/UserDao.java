@@ -25,6 +25,9 @@ public interface UserDao extends BaseMapper<User> {
     @Update("UPDATE user SET is_deleted=1 WHERE id=#{userId} AND is_deleted = 0")
     int softDeleteById(int userId);
 
+    @Select("SELECT * FROM user WHERE username=#{username} AND is_deleted = 0")
+    User selectByUsername(String username);
+
     // 自定义查询用户方法，通过id查询并且排除已软删除的用户
     @Select("SELECT * FROM user WHERE id=#{userId} AND is_deleted = 0")
     User selectById(int userId);

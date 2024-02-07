@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,9 +36,8 @@ public class UserController {
         this.userDao = userDao;
     }
 
-    public String getNowTime() {
-        LocalDateTime now = LocalDateTime.now();
-        return now.toString();
+    public LocalDateTime getNowTime() {
+        return LocalDateTime.now();
     }
 
     @GetMapping("/all")
@@ -60,8 +60,8 @@ public class UserController {
     public String addUser(
             @PathVariable String username,
             @PathVariable String password) {
-
-        User user = new User(null, username, password, getNowTime(), getNowTime(), null, false);
+        String passwordEncode = new BCryptPasswordEncoder().encode(password);
+        User user = new User(null, username, passwordEncode, getNowTime(), getNowTime(), null, false);
         userDao.insert(user);
         return String.format("Add User %s Successfully", user.getUsername());
     }
