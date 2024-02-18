@@ -1,10 +1,21 @@
 package com.kob.backend.config;
 
+import com.kob.backend.config.filter.JwtAuthenticationTokenFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Spring Security的配置类。
@@ -17,16 +28,52 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    /**
-     * 定义一个Bean来提供密码的编码功能。
-     * 这里使用了BCryptPasswordEncoder，它是基于BCrypt强散列方法的密码编码器。
-     * BCrypt是一种根据Blowfish密码学算法实现的自适应散列函数，可以防止彩虹表攻击，
-     * 并且可以通过增加迭代次数来适应硬件性能的提升。
-     *
-     * @return 返回一个使用BCrypt散列算法的PasswordEncoder实例。
-     */
+    // 注入自定义的JwtAuthenticationTokenFilter
+    private final JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter;
+
+    // 构造器注入JwtAuthenticationTokenFilter
+    @Autowired
+    public SecurityConfig(JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter, UserDetailsService userDetailsService) {
+        this.jwtAuthenticationTokenFilter = jwtAuthenticationTokenFilter;
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    // 定义SecurityFilterChain Bean来配置HttpSecurity
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                // 禁用CSRF
+                .csrf(AbstractHttpConfigurer::disable)
+                // 设置会话管理策略为无状态
+                .sessionManagement(sessionManagement ->
+                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // 配置请求权限
+                .authorizeRequests(authorizeRequests ->
+                        authorizeRequests
+                                // 允许所有用户访问/token/和/register/路径
+                                .antMatchers("/user/account/token/", "/user/account/register/").permitAll()
+                                // 允许所有用户对所有OPTIONS请求
+                                .antMatchers(HttpMethod.OPTIONS).permitAll()
+                                // 任何请求都需要认证
+                                .anyRequest().authenticated())
+                // 添加自定义JWT过滤器
+                //addFilterBefore 只是定义了过滤器在过滤链中的顺序，具体哪个过滤器会执行取决于请求的类型。
+                // 对于需要JWT验证的请求，只会执行 jwtAuthenticationTokenFilter；
+                // 对于需要表单登录的请求，则会执行 UsernamePasswordAuthenticationFilter。
+                .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        // 利用AuthenticationConfiguration提供的getAuthenticationManager方法
+        // 将AuthenticationManager配置为Spring容器中的Bean。
+        // 这样做之后，我们就可以在应用程序的其他部分通过自动装配（@Autowired）机制来使用AuthenticationManager，
+        // 从而完成例如用户登陆或令牌验证等认证操作。
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }
