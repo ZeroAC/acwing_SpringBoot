@@ -1,9 +1,9 @@
-package com.kob.backend.service.impl;
+package com.kob.backend.service.account.impl;
 
 import com.kob.backend.dao.UserDao;
 import com.kob.backend.pojo.User;
-import com.kob.backend.service.impl.obj.UserDetailsImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.kob.backend.service.account.model.UserDetailsImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -16,14 +16,10 @@ import org.springframework.stereotype.Service;
  * @author zeroac
  */
 @Service
+@RequiredArgsConstructor // 自动为所有final字段生成构造函数
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserDao userDao;
-
-    @Autowired
-    public UserDetailsServiceImpl(UserDao userDao) {
-        this.userDao = userDao;
-    }
 
     /**
      * 根据用户名，从数据库加载用户对象，并转换为UserDetails对象返回。

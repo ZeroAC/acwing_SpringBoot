@@ -4,7 +4,7 @@ import com.kob.backend.config.exception.TokenParsingException;
 import com.kob.backend.config.exception.UserNotLoggedInException;
 import com.kob.backend.dao.UserDao;
 import com.kob.backend.pojo.User;
-import com.kob.backend.service.impl.obj.UserDetailsImpl;
+import com.kob.backend.service.account.model.UserDetailsImpl;
 import com.kob.backend.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;

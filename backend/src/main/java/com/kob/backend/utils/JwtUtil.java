@@ -43,6 +43,11 @@ public class JwtUtil {
         return new SecretKeySpec(encodedKey, 0, encodedKey.length, "HmacSHA256");
     }
 
+    public static String createJWT(String subject) {
+        JwtBuilder builder = getJwtBuilder(subject, null, getUUID());
+        return builder.compact();
+    }
+
     // 构建JWT的方法，包括设置签发者、主题、签发时间、过期时间等信息
     public static JwtBuilder getJwtBuilder(String subject, Long ttlMillis, String uuid) {
         //获取当前时间戳

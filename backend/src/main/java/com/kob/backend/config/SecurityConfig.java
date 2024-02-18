@@ -1,17 +1,15 @@
 package com.kob.backend.config;
 
 import com.kob.backend.config.filter.JwtAuthenticationTokenFilter;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -26,16 +24,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  */
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor // 自动为所有final字段生成构造函数
 public class SecurityConfig {
 
     // 注入自定义的JwtAuthenticationTokenFilter
     private final JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter;
-
-    // 构造器注入JwtAuthenticationTokenFilter
-    @Autowired
-    public SecurityConfig(JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter, UserDetailsService userDetailsService) {
-        this.jwtAuthenticationTokenFilter = jwtAuthenticationTokenFilter;
-    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -52,14 +45,14 @@ public class SecurityConfig {
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 配置请求权限
-                .authorizeRequests(authorizeRequests ->
-                        authorizeRequests
-                                // 允许所有用户访问/token/和/register/路径
-                                .antMatchers("/user/account/token/", "/user/account/register/").permitAll()
-                                // 允许所有用户对所有OPTIONS请求
-                                .antMatchers(HttpMethod.OPTIONS).permitAll()
-                                // 任何请求都需要认证
-                                .anyRequest().authenticated())
+//                .authorizeRequests(authorizeRequests ->
+//                        authorizeRequests
+//                                // 允许所有用户访问/token/和/register/路径
+//                                .antMatchers("/user/account/token", "/user/account/register").permitAll()
+//                                // 允许所有用户对所有OPTIONS请求
+//                                .antMatchers(HttpMethod.OPTIONS).permitAll()
+//                                // 任何请求都需要认证
+//                                .anyRequest().authenticated())
                 // 添加自定义JWT过滤器
                 //addFilterBefore 只是定义了过滤器在过滤链中的顺序，具体哪个过滤器会执行取决于请求的类型。
                 // 对于需要JWT验证的请求，只会执行 jwtAuthenticationTokenFilter；

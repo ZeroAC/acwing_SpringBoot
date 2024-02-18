@@ -2,7 +2,7 @@ package com.kob.backend.controller.user;
 
 import com.kob.backend.dao.UserDao;
 import com.kob.backend.pojo.User;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +21,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/user") // 基础URL
+@RequiredArgsConstructor // 自动为所有final字段生成构造函数
 public class UserController {
     /*
      * 在Spring中，字段注入（通过 @Autowired 直接在字段上）被认为是一种不佳的实践，主要是
@@ -30,11 +31,6 @@ public class UserController {
      * 赖项声明为final，这意味着一旦构造完对象，这些依赖项就不能再被更改
      * */
     private final UserDao userDao;
-
-    @Autowired // 在构造器上使用@Autowired注解是可选的，如果该类只有一个构造器
-    public UserController(UserDao userDao) {
-        this.userDao = userDao;
-    }
 
     public LocalDateTime getNowTime() {
         return LocalDateTime.now();
@@ -61,7 +57,7 @@ public class UserController {
             @PathVariable String username,
             @PathVariable String password) {
         String passwordEncode = new BCryptPasswordEncoder().encode(password);
-        User user = new User(null, username, passwordEncode, getNowTime(), getNowTime(), null, false);
+        User user = new User(null, username, passwordEncode, null, getNowTime(), getNowTime(), null, false);
         userDao.insert(user);
         return String.format("Add User %s Successfully", user.getUsername());
     }

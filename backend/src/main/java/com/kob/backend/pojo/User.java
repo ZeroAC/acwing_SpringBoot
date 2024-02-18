@@ -36,6 +36,8 @@ public class User implements Serializable {
     @Size(min = 6, max = 100, message = "Password must be between 6 and 100 characters")
     private String password;
 
+    private String photo;
+
     @TableField("create_time") // 若字段名与列名不一致，需要指定 MyBatis-Plus: 指定字段映射数据库列名
     private LocalDateTime createTime;
 

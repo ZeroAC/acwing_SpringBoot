@@ -1,4 +1,4 @@
-package com.kob.backend.service.impl.obj;
+package com.kob.backend.service.account.model;
 
 import com.kob.backend.pojo.User;
 import lombok.AllArgsConstructor;
