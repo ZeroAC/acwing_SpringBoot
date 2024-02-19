@@ -20,7 +20,7 @@ class BackendApplicationTests {
     @Test
         // 定义一个测试JWT工具类的方法
     void testJwtUtil() {
-        String uuid = JwtUtil.getUUID();
+        String uuid = JwtUtil.getUuid();
         System.out.println(uuid);
         // 调用JwtUtil类的getJwtBuilder方法，创建一个新的JWT构建器。
         // 传入的参数是：主题设置为"yxc"，一般为用户唯一标识; 有效时间设置为null（表示使用默认有效期），JWT ID设置为之前生成的uuid

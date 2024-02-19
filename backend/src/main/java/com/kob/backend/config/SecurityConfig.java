@@ -4,6 +4,7 @@ import com.kob.backend.config.filter.JwtAuthenticationTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,6 +31,10 @@ public class SecurityConfig {
     // 注入自定义的JwtAuthenticationTokenFilter
     private final JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter;
 
+    // 注入PasswordEncoder：首先，你需要一个PasswordEncoder的实例。
+    // 在Spring Security 5中，推荐的做法是使用BCryptPasswordEncoder，
+    // 但也可以使用其他实现。通常，你会在配置类中创建这个bean，并将其注入到
+    // 需要使用它的服务或组件中
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -45,14 +50,14 @@ public class SecurityConfig {
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 配置请求权限
-//                .authorizeRequests(authorizeRequests ->
-//                        authorizeRequests
-//                                // 允许所有用户访问/token/和/register/路径
-//                                .antMatchers("/user/account/token", "/user/account/register").permitAll()
-//                                // 允许所有用户对所有OPTIONS请求
-//                                .antMatchers(HttpMethod.OPTIONS).permitAll()
-//                                // 任何请求都需要认证
-//                                .anyRequest().authenticated())
+                .authorizeRequests(authorizeRequests ->
+                        authorizeRequests
+                                // 允许所有用户访问/token/和/register/路径
+                                .antMatchers("/user/account/token", "/user/account/register").permitAll()
+                                // 允许所有用户对所有OPTIONS请求
+                                .antMatchers(HttpMethod.OPTIONS).permitAll()
+                                // 任何请求都需要认证
+                                .anyRequest().authenticated())
                 // 添加自定义JWT过滤器
                 //addFilterBefore 只是定义了过滤器在过滤链中的顺序，具体哪个过滤器会执行取决于请求的类型。
                 // 对于需要JWT验证的请求，只会执行 jwtAuthenticationTokenFilter；

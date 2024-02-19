@@ -31,7 +31,7 @@ public class JwtUtil {
     private static final SecretKey SECRET_KEY = generalKey();
 
     // 生成UUID，用于JWT的ID字段，通常是一个随机生成的字符串
-    public static String getUUID() {
+    public static String getUuid() {
         // 使用 UUID 类的 randomUUID 方法生成一个随机 UUID 对象，然后将其转换为字符串
         // 使用字符串的 replaceAll 方法去除字符串中的所有连字符（-）
         return UUID.randomUUID().toString().replace("-", "");
@@ -43,8 +43,8 @@ public class JwtUtil {
         return new SecretKeySpec(encodedKey, 0, encodedKey.length, "HmacSHA256");
     }
 
-    public static String createJWT(String subject) {
-        JwtBuilder builder = getJwtBuilder(subject, null, getUUID());
+    public static String createJwt(String subject) {
+        JwtBuilder builder = getJwtBuilder(subject, null, getUuid());
         return builder.compact();
     }
 

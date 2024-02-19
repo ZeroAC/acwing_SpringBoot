@@ -1,5 +1,6 @@
-package com.kob.backend.controller.user;
+package com.kob.backend.controller.user.account;
 
+import com.kob.backend.controller.commons.BasisControl;
 import com.kob.backend.dao.UserDao;
 import com.kob.backend.pojo.User;
 import lombok.RequiredArgsConstructor;
@@ -18,11 +19,13 @@ import java.util.List;
 
 /**
  * @author zeroac
+ * <p>
+ * 教学CRUD演示
  */
 @RestController
 @RequestMapping("/user") // 基础URL
 @RequiredArgsConstructor // 自动为所有final字段生成构造函数
-public class UserController {
+public class UserController extends BasisControl {
     /*
      * 在Spring中，字段注入（通过 @Autowired 直接在字段上）被认为是一种不佳的实践，主要是
      * 因为它违背了依赖注入的几个关键原则，如不可变性和易测试性。字段注入使得你的类和Spring框架

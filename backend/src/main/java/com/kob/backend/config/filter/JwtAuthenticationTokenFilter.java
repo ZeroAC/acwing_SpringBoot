@@ -7,7 +7,7 @@ import com.kob.backend.pojo.User;
 import com.kob.backend.service.account.model.UserDetailsImpl;
 import com.kob.backend.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -24,13 +24,9 @@ import java.io.IOException;
  * @author zeroac
  */
 @Component
+@RequiredArgsConstructor // 自动为所有final字段生成构造函数
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     private final UserDao userDao;
-
-    @Autowired
-    public JwtAuthenticationTokenFilter(UserDao userDao) {
-        this.userDao = userDao;
-    }
 
     /**
      * 该方法为自定义的Spring Security过滤器中的核心方法，用于拦截请求并执行JWT认证。
@@ -48,7 +44,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, RuntimeException {
         // 从请求头中获取名为"token"的JWT令牌
         String token = request.getHeader("token");
-        // 如果令牌为空或者格式不正确（不是以"Bearer "开头），则直接放行请求
+        // 如果令牌为空或者格式不正确（不是以"Bearer "开头），则直接放行请求 转到账号密码过滤器验证
         if (!StringUtils.hasText(token) || !token.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
