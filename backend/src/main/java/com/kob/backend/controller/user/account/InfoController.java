@@ -22,6 +22,7 @@ public class InfoController extends BasisControl {
     @GetMapping("/info")
     public Map<String, String> getInfo() {
         User user = getUser();
+        logger.info("用户信息为:{}", user);
         return infoService.getInfo(user);
     }
 }

@@ -43,7 +43,8 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, RuntimeException {
         // 从请求头中获取名为"token"的JWT令牌
-        String token = request.getHeader("token");
+        String token = request.getHeader("Authorization");
+        System.out.println("拦截器，获取token: " + token);
         // 如果令牌为空或者格式不正确（不是以"Bearer "开头），则直接放行请求 转到账号密码过滤器验证
         if (!StringUtils.hasText(token) || !token.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
