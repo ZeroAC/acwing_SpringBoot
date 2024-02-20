@@ -67,6 +67,18 @@
                   :to="{ name: 'user_bot_index' }"
                   >我的Bot</router-link
                 >
+                <router-link
+                  class="dropdown-item"
+                  active-class="active-link"
+                  :to="{ name: 'user_account_login' }"
+                  >登录</router-link
+                >
+                <router-link
+                  class="dropdown-item"
+                  active-class="active-link"
+                  :to="{ name: 'user_account_register' }"
+                  >注册</router-link
+                >
               </li>
               <li><a class="dropdown-item" href="#">退出</a></li>
             </ul>

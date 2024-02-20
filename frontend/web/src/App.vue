@@ -7,13 +7,13 @@ import NavBar from "./components/NavBar.vue";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min.js";
 // 引入axios
-import axios from "axios";
+// import axios from "axios";
 export default {
   components: {
     NavBar,
   },
   setup() {
-    let base_url = "http://127.0.0.1:3000/user/account/";
+    // let base_url = "http://127.0.0.1:3000/user/account/";
     // 测试LoginService
     // axios
     //   .post(base_url + "token", {
@@ -26,7 +26,6 @@ export default {
     //   .catch((error) => {
     //     console.log(error.response);
     //   });
-
     // 测试InfoService
     // axios
     //   .get(base_url + "info", {
@@ -42,20 +41,19 @@ export default {
     //   .catch((error) => {
     //     console.log(error.response);
     //   });
-
     // 测试RegisterService
-    axios
-      .post(base_url + "register", {
-        username: "jcc",
-        password: "123456",
-        confirmedPassword: "123456",
-      })
-      .then((response) => {
-        console.log(response.data);
-      })
-      .catch((error) => {
-        console.log(error.response);
-      });
+    // axios
+    //   .post(base_url + "register", {
+    //     username: "jcc",
+    //     password: "123456",
+    //     confirmedPassword: "123456",
+    //   })
+    //   .then((response) => {
+    //     console.log(response.data);
+    //   })
+    //   .catch((error) => {
+    //     console.log(error.response);
+    //   });
   },
 };
 </script>

@@ -28,6 +28,16 @@ const routes = [
     component: () => import("@/views/user/bot/UserBotIndexView"),
   },
   {
+    path: "/user/account/login",
+    name: "user_account_login",
+    component: () => import("@/views/user/account/UserAccountLoginView"),
+  },
+  {
+    path: "/user/account/register",
+    name: "user_account_register",
+    component: () => import("@/views/user/account/UserAccountRegisterView"),
+  },
+  {
     path: "/404/",
     name: "404",
     component: () => import("@/views/error/NotFoundView"),
