@@ -23,7 +23,9 @@
               placeholder="请输入密码"
             />
           </div>
-          <div class="error-message">{{ error_message }}</div>
+          <div v-if="error_message" class="alert alert-danger" role="alert">
+            {{ error_message }}
+          </div>
           <button type="submit" class="btn btn-primary">提交</button>
         </form>
       </div>
@@ -59,12 +61,13 @@ export default {
             },
             error(info) {
               console.log("用户信息获取失败: " + JSON.stringify(info));
+              error_message.value = data.error_message;
             },
           });
         },
         error(data) {
           console.log("登录失败: " + JSON.stringify(data));
-          error_message.value = "用户名或密码错误";
+          error_message.value = data.error_message;
         },
       });
     };

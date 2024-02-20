@@ -4,7 +4,11 @@
       <router-link
         class="navbar-brand"
         active-class="active-link"
-        :to="{ name: 'home_index' }"
+        :to="
+          $store.state.user.is_login
+            ? { name: 'home_index' }
+            : { name: 'user_account_login' }
+        "
         >King Of Bots</router-link
       >
       <button
@@ -50,37 +54,76 @@
         </ul>
         <ul class="navbar-nav mb-2 mb-lg-0 me-5 ms-5">
           <div class="nav-item dropdown">
-            <button
-              class="btn btn-secondary dropdown-toggle bg-dark"
-              type="button"
-              id="dropdownMenuButton"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              我的名字
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              <li>
-                <router-link
-                  class="dropdown-item"
-                  active-class="active-link"
-                  :to="{ name: 'user_bot_index' }"
-                  >我的Bot</router-link
-                >
-                <router-link
-                  class="dropdown-item"
-                  active-class="active-link"
-                  :to="{ name: 'user_account_login' }"
-                  >登录</router-link
-                >
-                <router-link
-                  class="dropdown-item"
-                  active-class="active-link"
-                  :to="{ name: 'user_account_register' }"
-                  >注册</router-link
-                >
+            <ul class="navbar-nav" v-if="$store.state.user.is_login">
+              <li class="nav-item dropdown">
+                <div class="row justify-content-center">
+                  <div class="col-md-6">
+                    <div
+                      class="d-flex align-items-center justify-content-center"
+                    >
+                      <img
+                        :src="$store.state.user.photo"
+                        alt=""
+                        class="avatar"
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div
+                      class="d-flex align-items-center justify-content-center"
+                    >
+                      <a
+                        class="nav-link dropdown-toggle"
+                        href="#"
+                        id="navbarDropdown"
+                        role="button"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                      >
+                        {{ $store.state.user.username }}
+                      </a>
+                      <ul
+                        class="dropdown-menu"
+                        aria-labelledby="navbarDropdown"
+                      >
+                        <li>
+                          <router-link
+                            class="dropdown-item"
+                            :to="{ name: 'user_bot_index' }"
+                            >我的Bot</router-link
+                          >
+                        </li>
+                        <li><hr class="dropdown-divider" /></li>
+                        <li>
+                          <a class="dropdown-item" href="#" @click="logout"
+                            >退出</a
+                          >
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </li>
-              <li><a class="dropdown-item" href="#">退出</a></li>
+            </ul>
+            <ul class="navbar-nav" v-else>
+              <li class="nav-item">
+                <router-link
+                  class="nav-link"
+                  :to="{ name: 'user_account_login' }"
+                  role="button"
+                >
+                  登录
+                </router-link>
+              </li>
+              <li class="nav-item">
+                <router-link
+                  class="nav-link"
+                  :to="{ name: 'user_account_register' }"
+                  role="button"
+                >
+                  注册
+                </router-link>
+              </li>
             </ul>
           </div>
         </ul>
@@ -89,11 +132,34 @@
   </nav>
 </template>
 <script>
-export default {};
+import { useStore } from "vuex";
+import router from "@/router/index";
+export default {
+  setup() {
+    const store = useStore();
+    const logout = () => {
+      store.dispatch("logout");
+      router.push({ name: "user_account_login" });
+    };
+    return {
+      logout,
+    };
+  },
+};
 </script>
 <style scoped>
 .active-link {
   color: rgb(30, 237, 252); /* 设置高亮颜色 */
   font-weight: bold; /* 设置字体加粗 */
+}
+.avatar {
+  /* 将图像强制为圆形 */
+  border-radius: 50%;
+
+  /* 设置图像的高度和宽度和字体的行高一致 */
+  height: 8vh;
+
+  /* 对于图像，可能需要添加 object-fit 来确保它们正确缩放而不是变形 */
+  object-fit: cover;
 }
 </style>

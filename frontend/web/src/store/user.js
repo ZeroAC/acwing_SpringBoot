@@ -29,9 +29,35 @@ export default {
     updateToken(state, token) {
       state.token = token;
     },
+    logout(state) {
+      state.id = "";
+      state.username = "";
+      state.photo = "";
+      state.token = "";
+      state.is_login = false;
+    },
   },
   // actions 对象包含了多个处理异步操作的方法
   actions: {
+    register(context, data) {
+      axios
+        .post(base_url + "register", {
+          username: data.username,
+          password: data.password,
+          confirmedPassword: data.confirmedPassword,
+        })
+        .then((response) => {
+          const responseData = response.data;
+          if (responseData.error_message === "success") {
+            data.success(responseData);
+          } else {
+            data.error(responseData);
+          }
+        })
+        .catch((error) => {
+          data.error(error);
+        });
+    },
     // login 是一个 action，用于处理用户登录
     login(context, data) {
       axios
@@ -76,6 +102,9 @@ export default {
         .catch((error) => {
           data.error(error);
         });
+    },
+    logout(context) {
+      context.commit("logout");
     },
   },
   // modules 对象允许将 store 分割成模块，每个模块拥有自己的 state、mutations、actions、getters
