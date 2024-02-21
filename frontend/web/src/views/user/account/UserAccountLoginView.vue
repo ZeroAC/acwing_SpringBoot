@@ -1,5 +1,5 @@
 <template>
-  <ContentField>
+  <ContentField v-if="!$store.state.user.pulling_info">
     <div class="row justify-content-md-center">
       <div class="col-3">
         <form @submit.prevent="login">
@@ -67,6 +67,9 @@ export default {
         },
         error() {},
       });
+    } else {
+      //若不存在token，则无需拉取用户信息，则会显示登录注册页面
+      store.commit("updatePullingInfo", false);
     }
 
     const login = () => {

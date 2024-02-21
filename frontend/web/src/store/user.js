@@ -13,6 +13,7 @@ export default {
     photo: "", // 用户的照片
     token: "", // 认证后分配给用户的 token
     is_login: false, // 用户是否登录的标志
+    pulling_info: true, //是否正在拉取用户信息
   },
   // getters 对象包含了多个获取 state 中数据的方法
   getters: {
@@ -56,6 +57,9 @@ export default {
       state.photo = "";
       state.token = "";
       state.is_login = false;
+    },
+    updatePullingInfo(state, pulling_info) {
+      state.pulling_info = pulling_info;
     },
   },
   // actions 对象包含了多个处理异步操作的方法
