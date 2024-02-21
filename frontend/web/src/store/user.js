@@ -15,7 +15,28 @@ export default {
     is_login: false, // 用户是否登录的标志
   },
   // getters 对象包含了多个获取 state 中数据的方法
-  getters: {},
+  getters: {
+    // 获取用户ID
+    getUserId(state) {
+      return state.id;
+    },
+    // 获取用户名
+    getUsername(state) {
+      return state.username;
+    },
+    // 获取用户照片
+    getUserPhoto(state) {
+      return state.photo;
+    },
+    // 获取用户token
+    getUserToken(state) {
+      return state.token;
+    },
+    // 判断用户是否登录
+    isUserLoggedIn(state) {
+      return state.is_login;
+    },
+  },
   // mutations 对象包含了多个直接修改 state 的方法
   mutations: {
     // updateUser 是一个 mutation，用于更新用户信息
@@ -70,6 +91,8 @@ export default {
           if (responseData.error_message === "success") {
             // 如果登录成功，更新 token
             context.commit("updateToken", responseData.token);
+            //把用户的 token 存储到浏览器的 local storage，这样就可以实现登录状态持久化
+            localStorage.setItem("jwt_token", responseData.token);
             data.success(responseData);
           } else {
             data.error(responseData);
@@ -104,6 +127,7 @@ export default {
         });
     },
     logout(context) {
+      localStorage.removeItem("jwt_token");
       context.commit("logout");
     },
   },

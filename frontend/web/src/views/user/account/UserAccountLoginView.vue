@@ -27,6 +27,16 @@
             {{ error_message }}
           </div>
           <button type="submit" class="btn btn-primary">提交</button>
+          <div class="mt-3 text-sm">
+            <span class="fs-6"
+              >还没有账号？
+              <router-link
+                :to="{ name: 'user_account_register' }"
+                class="text-primary"
+                >点击注册</router-link
+              >
+            </span>
+          </div>
         </form>
       </div>
     </div>
@@ -46,6 +56,18 @@ export default {
     let username = ref("");
     let password = ref("");
     let error_message = ref("");
+
+    //若已经登录过，则获取信息跳转到首页
+    const jwt_token = localStorage.getItem("jwt_token");
+    if (jwt_token) {
+      store.commit("updateToken", jwt_token);
+      store.dispatch("get_info", {
+        success() {
+          router.push({ name: "home_index" });
+        },
+        error() {},
+      });
+    }
 
     const login = () => {
       error_message.value = "";
