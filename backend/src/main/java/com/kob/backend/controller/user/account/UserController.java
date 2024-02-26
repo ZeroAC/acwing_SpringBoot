@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -35,8 +35,8 @@ public class UserController extends BasisControl {
      * */
     private final UserDao userDao;
 
-    public LocalDateTime getNowTime() {
-        return LocalDateTime.now();
+    public Date getNowTime() {
+        return new Date();
     }
 
     @GetMapping("/all")

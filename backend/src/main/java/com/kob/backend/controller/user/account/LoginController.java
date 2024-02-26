@@ -26,6 +26,6 @@ public class LoginController extends BasisControl {
         String username = map.get("username");
         String password = map.get("password");
         logger.info("username: {},password: {}", username, password);
-        return ResponseEntity.ok(loginService.getToken(username, password));
+        return getResponse(loginService.getToken(username, password));
     }
 }

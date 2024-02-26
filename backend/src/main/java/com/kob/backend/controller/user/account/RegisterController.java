@@ -29,6 +29,6 @@ public class RegisterController extends BasisControl {
         String password = map.get("password");
         String confirmedPassword = map.get("confirmedPassword");
         logger.info("username: {},password: {}", username, password);
-        return ResponseEntity.ok(registerService.register(username, password, confirmedPassword));
+        return getResponse(registerService.register(username, password, confirmedPassword));
     }
 }

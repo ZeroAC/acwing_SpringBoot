@@ -4,6 +4,7 @@ import com.kob.backend.controller.commons.BasisControl;
 import com.kob.backend.pojo.User;
 import com.kob.backend.service.account.InfoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,10 +21,10 @@ public class InfoController extends BasisControl {
     private final InfoService infoService;
 
     @GetMapping("/info")
-    public Map<String, String> getInfo() {
+    public ResponseEntity<Map<String, String>> getInfo() {
         User user = getUser();
         logger.info("用户信息为:{}", user);
-        return infoService.getInfo(user);
+        return getResponse(infoService.getInfo(user));
     }
 }
 

@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,8 +24,8 @@ public class RegisterServiceImpl implements RegisterService {
 
     private final PasswordEncoder passwordEncoder;
 
-    public LocalDateTime getNowTime() {
-        return LocalDateTime.now();
+    public Date getNowTime() {
+        return new Date();
     }
 
     @Override

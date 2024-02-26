@@ -5,9 +5,12 @@ import com.kob.backend.service.account.model.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.Map;
 
 /**
  * @author zeroac
@@ -58,5 +61,13 @@ public abstract class BasisControl {
         }
 
         return user;
+    }
+
+    public ResponseEntity<Map<String, String>> getResponse(Map<String, String> ret) {
+        if ("success".equals(ret.get("error_message"))) {
+            return ResponseEntity.ok(ret);
+        } else {
+            return ResponseEntity.status(400).body(ret);
+        }
     }
 }
