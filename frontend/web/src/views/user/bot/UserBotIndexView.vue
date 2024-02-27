@@ -21,7 +21,7 @@
               >
                 创建Bot
               </button>
-              <!-- 增加一个模态框 -->
+              <!-- 创建Bot模态框 -->
               <div
                 class="modal fade"
                 id="add-bot-modal"
@@ -43,7 +43,6 @@
                       ></button>
                     </div>
                     <div class="modal-body">
-                      <!-- Bot 名称输入 -->
                       <div class="mb-3">
                         <label for="add-bot-title" class="form-label"
                           >名称</label
@@ -56,7 +55,6 @@
                           placeholder="请输入 Bot 名称"
                         />
                       </div>
-                      <!-- Bot 简介输入 -->
                       <div class="mb-3">
                         <label for="add-bot-description" class="form-label"
                           >简介</label
@@ -69,7 +67,6 @@
                           placeholder="请输入 Bot 简介"
                         ></textarea>
                       </div>
-                      <!-- Bot 代码输入 -->
                       <div class="mb-3">
                         <label for="add-bot-content" class="form-label"
                           >代码</label
@@ -85,11 +82,7 @@
                     </div>
                     <div class="modal-footer">
                       <!-- 错误信息显示 -->
-                      <div
-                        class="alert alert-danger fade show"
-                        role="alert"
-                        v-if="addBotData.error_message"
-                      >
+                      <div class="error-message">
                         {{ addBotData.error_message }}
                       </div>
                       <!-- 创建按钮 -->
@@ -105,6 +98,7 @@
                         type="button"
                         class="btn btn-secondary"
                         data-bs-dismiss="modal"
+                        id="addBotCancelButton"
                       >
                         取消
                       </button>
@@ -122,7 +116,7 @@
                 <div class="modal-dialog">
                   <div class="modal-content">
                     <div class="modal-header">
-                      <h5 class="modal-title">操作成功</h5>
+                      <h5 class="modal-title">提示</h5>
                       <button
                         type="button"
                         class="btn-close"
@@ -167,11 +161,101 @@
                     <td>{{ bot.createTime }}</td>
                     <td>
                       <!-- 添加按钮类，移除内联样式 -->
-                      <button type="button" class="btn btn-secondary me-2">
+                      <button
+                        type="button"
+                        class="btn btn-secondary me-2"
+                        data-bs-toggle="modal"
+                        :data-bs-target="'#update-bot-modal-' + bot.id"
+                      >
                         修改
                       </button>
                       <!-- Bootstrap 4使用mr-2，Bootstrap 5使用me-2 -->
-                      <button type="button" class="btn btn-danger">删除</button>
+                      <button
+                        type="button"
+                        class="btn btn-danger"
+                        @click="removeBot(bot)"
+                      >
+                        删除
+                      </button>
+                      <div
+                        class="modal fade"
+                        :id="'update-bot-modal-' + bot.id"
+                        tabindex="-1"
+                      >
+                        <!--修改Bot模态框-->
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="exampleModalLabel">
+                                修改Bot
+                              </h5>
+                              <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                              ></button>
+                            </div>
+                            <div class="modal-body">
+                              <div class="mb-3">
+                                <label for="add-bot-title" class="form-label"
+                                  >名称</label
+                                >
+                                <input
+                                  v-model="bot.title"
+                                  type="text"
+                                  class="form-control"
+                                  placeholder="请输入Bot名称"
+                                />
+                              </div>
+                              <div class="mb-3">
+                                <label
+                                  for="add-bot-description"
+                                  class="form-label"
+                                  >简介</label
+                                >
+                                <textarea
+                                  v-model="bot.description"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="请输入 Bot 简介"
+                                ></textarea>
+                              </div>
+                              <div class="mb-3">
+                                <label for="add-bot-code" class="form-label"
+                                  >代码</label
+                                >
+                                <textarea
+                                  v-model="bot.content"
+                                  class="form-control"
+                                  rows="5"
+                                  placeholder="请输入 Bot 代码"
+                                ></textarea>
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <div class="error-message">
+                                {{ bot.error_message }}
+                              </div>
+                              <button
+                                type="button"
+                                class="btn btn-primary"
+                                @click="updateBot(bot)"
+                              >
+                                保存修改
+                              </button>
+                              <button
+                                type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal"
+                                :id="'updateBotCancelButton' + bot.id"
+                              >
+                                取消
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -262,6 +346,7 @@ const currentPage = ref(1); //当前页
 const pageSize = ref(2); //每页显示几个数据
 const totalBots = ref(0); //数据总数
 const totalPages = computed(() => Math.ceil(totalBots.value / pageSize.value)); //总页数
+const successMessage = ref(); //操作成功的提示
 //动态显示分页页码
 const paginatedPages = computed(() => {
   let pages = [];
@@ -315,6 +400,7 @@ const gotoPage = (pageNumber) => {
 
 const store = useStore();
 let base_url = "http://127.0.0.1:3000/user/bot/";
+//拉取bot列表(分页展示)
 const getList = () => {
   axios
     .get(base_url + "getList", {
@@ -378,10 +464,10 @@ const validateInput = (data) => {
   // If error_message is empty, validation passed
   return data.error_message === "";
 };
-
+//添加机器人
 const addBot = (data) => {
   if (!validateInput(data)) {
-    setTimeout(() => (addBotData.error_message = ""), 1500);
+    setTimeout(() => (addBotData.error_message = ""), 3000);
     return;
   }
   axios
@@ -402,7 +488,8 @@ const addBot = (data) => {
       const responseData = response.data;
       data.error_message = responseData.error_message;
       if (responseData.error_message == "success") {
-        document.querySelector('button[data-bs-dismiss="modal"]').click();
+        successMessage.value = "添加bot" + responseData.title + "成功";
+        document.getElementById("addBotCancelButton").click();
         new Modal(document.getElementById("successModal")).show();
         getList();
       } else {
@@ -413,9 +500,77 @@ const addBot = (data) => {
       data.error_message = error;
       console.log("添加bot失败: " + JSON.stringify(error));
     });
-  setTimeout(() => (addBotData.error_message = ""), 1500);
+  setTimeout(() => (addBotData.error_message = ""), 3000);
 };
-
+//删除一个 bot
+const removeBot = (data) => {
+  axios
+    .post(
+      base_url + "remove",
+      {
+        bot_id: data.id,
+      },
+      {
+        headers: {
+          Authorization: "Bearer " + store.state.user.token, // 请求头中包含 token
+        },
+      }
+    )
+    .then((response) => {
+      const responseData = response.data;
+      data.error_message = responseData.error_message;
+      if (responseData.error_message == "success") {
+        successMessage.value = "删除bot" + data.title + "成功";
+        new Modal(document.getElementById("successModal")).show();
+        getList();
+      } else {
+        console.log("删除bot失败: " + JSON.stringify(responseData));
+      }
+    })
+    .catch((error) => {
+      data.error_message = error;
+      console.log("删除bot失败: " + JSON.stringify(error));
+    });
+};
+//修改一个bot
+const updateBot = (data) => {
+  if (!validateInput(data)) {
+    setTimeout(() => (data.error_message = ""), 3000);
+    return;
+  }
+  axios
+    .post(
+      base_url + "update",
+      {
+        bot_id: data.id,
+        title: data.title,
+        description: data.description,
+        content: data.content,
+      },
+      {
+        headers: {
+          Authorization: "Bearer " + store.state.user.token, // 请求头中包含 token
+        },
+      }
+    )
+    .then((response) => {
+      const responseData = response.data;
+      data.error_message = responseData.error_message;
+      if (responseData.error_message == "success") {
+        successMessage.value = "修改bot" + data.title + "成功";
+        document.getElementById("updateBotCancelButton" + data.id).click();
+        new Modal(document.getElementById("successModal")).show();
+        getList();
+      } else {
+        console.log("删除bot失败: " + JSON.stringify(responseData));
+      }
+    })
+    .catch((error) => {
+      data.error_message = error;
+      console.log("删除bot失败: " + JSON.stringify(error));
+    });
+  setTimeout(() => (data.error_message = ""), 3000);
+};
 getList();
 </script>
 <style scoped>
