@@ -13,9 +13,138 @@
           <div class="card" style="margin-top: 20px">
             <div class="card-header">
               <span style="font-size: 130%">我的Bot</span>
-              <button type="button" class="btn btn-primary float-end">
+              <button
+                type="button"
+                class="btn btn-primary float-end"
+                data-bs-toggle="modal"
+                data-bs-target="#add-bot-modal"
+              >
                 创建Bot
               </button>
+              <!-- 增加一个模态框 -->
+              <div
+                class="modal fade"
+                id="add-bot-modal"
+                tabindex="-1"
+                aria-labelledby="add-bot-modal-label"
+                aria-hidden="true"
+              >
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="add-bot-modal-label">
+                        创建 Bot
+                      </h5>
+                      <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                      ></button>
+                    </div>
+                    <div class="modal-body">
+                      <!-- Bot 名称输入 -->
+                      <div class="mb-3">
+                        <label for="add-bot-title" class="form-label"
+                          >名称</label
+                        >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="add-bot-title"
+                          v-model="addBotData.title"
+                          placeholder="请输入 Bot 名称"
+                        />
+                      </div>
+                      <!-- Bot 简介输入 -->
+                      <div class="mb-3">
+                        <label for="add-bot-description" class="form-label"
+                          >简介</label
+                        >
+                        <textarea
+                          class="form-control"
+                          id="add-bot-description"
+                          rows="3"
+                          v-model="addBotData.description"
+                          placeholder="请输入 Bot 简介"
+                        ></textarea>
+                      </div>
+                      <!-- Bot 代码输入 -->
+                      <div class="mb-3">
+                        <label for="add-bot-content" class="form-label"
+                          >代码</label
+                        >
+                        <textarea
+                          class="form-control"
+                          id="add-bot-content"
+                          rows="5"
+                          v-model="addBotData.content"
+                          placeholder="请输入 Bot 代码"
+                        ></textarea>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <!-- 错误信息显示 -->
+                      <div
+                        class="alert alert-danger fade show"
+                        role="alert"
+                        v-if="addBotData.error_message"
+                      >
+                        {{ addBotData.error_message }}
+                      </div>
+                      <!-- 创建按钮 -->
+                      <button
+                        type="button"
+                        class="btn btn-primary"
+                        @click="addBot(addBotData)"
+                      >
+                        创建
+                      </button>
+                      <!-- 取消按钮 -->
+                      <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                      >
+                        取消
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- 创建成功提示 -->
+              <div
+                class="modal fade"
+                id="successModal"
+                tabindex="-1"
+                aria-hidden="true"
+              >
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">操作成功</h5>
+                      <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                      ></button>
+                    </div>
+                    <div class="modal-body">
+                      {{ successMessage }}
+                    </div>
+                    <div class="modal-footer">
+                      <button
+                        type="button"
+                        class="btn btn-success"
+                        data-bs-dismiss="modal"
+                      >
+                        确定
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="card-body">
               <!-- Bootstrap的响应式表格 -->
@@ -65,22 +194,7 @@
                       <span aria-hidden="true">&laquo;</span>
                     </a>
                   </li>
-
-                  <!-- Page Numbers -->
-                  <!-- <li
-                    v-for="page in totalPages"
-                    :key="page"
-                    class="page-item"
-                    :class="{ active: currentPage === page }"
-                  >
-                    <a
-                      class="page-link"
-                      href="#"
-                      @click.prevent="gotoPage(page)"
-                    >
-                      {{ page }}
-                    </a>
-                  </li> -->
+                  <!-- 中间的页码 -->
                   <li
                     v-for="page in paginatedPages"
                     :key="page"
@@ -160,9 +274,10 @@
 </template>
 <script>
 import ContentField from "@/components/ContentField";
-import { ref, computed } from "vue";
+import { ref, computed, reactive } from "vue";
 import axios from "axios";
 import { useStore } from "vuex";
+import * as bootstrap from "bootstrap";
 export default {
   components: {
     ContentField,
@@ -175,6 +290,7 @@ export default {
     const totalPages = computed(() =>
       Math.ceil(totalBots.value / pageSize.value)
     ); //总页数
+    //动态显示分页页码
     const paginatedPages = computed(() => {
       let pages = [];
       let startPage, endPage;
@@ -249,13 +365,53 @@ export default {
         });
     };
 
+    //更改每页显示的条数
     const changePageSize = (newPageSize) => {
       pageSize.value = newPageSize;
       currentPage.value = 1; // Reset to first page
       getList(); // Method to load data based on new limit
     };
 
+    //reactive 用于创建一个响应式的复杂类型的数据，比如对象或数组。
+    const addBotData = reactive({
+      title: "",
+      description: "",
+      content: "",
+      error_message: "",
+    });
+    //添加机器人时的数据校验
+    const validateInput = (data) => {
+      // Reset error message before validation
+      data.error_message = "";
+
+      // Validate title
+      if (!data.title) {
+        data.error_message += "标题不能为空";
+      } else if (data.title.length > 100) {
+        data.error_message += "标题长度不能大于100";
+      }
+
+      // Validate description
+      if (data.description.length > 100) {
+        data.error_message += "简介长度不能超过100";
+      }
+
+      // Validate content
+      if (!data.content) {
+        data.error_message += "代码不能为空。";
+      } else if (data.content.length > 1000000) {
+        data.error_message += "代码长度不能超过1000000。";
+      }
+
+      // If error_message is empty, validation passed
+      return data.error_message === "";
+    };
+
     const addBot = (data) => {
+      if (!validateInput(data)) {
+        setTimeout(() => (addBotData.error_message = ""), 1500);
+        return;
+      }
       axios
         .post(
           base_url + "add",
@@ -272,21 +428,22 @@ export default {
         )
         .then((response) => {
           const responseData = response.data;
+          data.error_message = responseData.error_message;
           if (responseData.error_message == "success") {
+            document.querySelector('button[data-bs-dismiss="modal"]').click();
+            new bootstrap.Modal(document.getElementById("successModal")).show();
             getList();
           } else {
             console.log("添加bot失败: " + JSON.stringify(responseData));
           }
         })
         .catch((error) => {
+          data.error_message = error;
           console.log("添加bot失败: " + JSON.stringify(error));
         });
+      setTimeout(() => (addBotData.error_message = ""), 1500);
     };
-    addBot({
-      title: "第二个bot",
-      description: "第二个bot的描述",
-      content: "第二个bot的内容",
-    });
+
     getList();
     return {
       bots,
@@ -296,6 +453,7 @@ export default {
       gotoPage,
       getList,
       addBot,
+      addBotData,
       changePageSize,
       paginatedPages,
     };
