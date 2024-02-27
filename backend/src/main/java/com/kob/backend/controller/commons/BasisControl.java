@@ -64,7 +64,8 @@ public abstract class BasisControl {
     }
 
     public ResponseEntity<Map<String, String>> getResponse(Map<String, String> ret) {
-        if ("success".equals(ret.get("error_message"))) {
+        String errorMessage = ret.get("error_message");
+        if (errorMessage != null && !errorMessage.isEmpty()) {
             return ResponseEntity.ok(ret);
         } else {
             return ResponseEntity.status(400).body(ret);

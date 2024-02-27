@@ -229,40 +229,19 @@
                   </li>
                 </ul>
                 <!-- Items Per Page Dropdown -->
-                <div class="dropdown ml-3">
-                  <button
-                    class="btn btn-secondary dropdown-toggle"
-                    type="button"
-                    id="dropdownMenuButton"
-                    data-bs-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false"
+                <div class="d-flex align-items-center ms-3 fs-6">
+                  <label for="pageSizeSelect" class="form-label me-2">
+                    每页数量
+                  </label>
+                  <select
+                    class="form-select form-select-sm custom-select"
+                    id="pageSizeSelect"
+                    @change="changePageSize($event.target.value)"
                   >
-                    {{ pageSize }}
-                  </button>
-                  <div
-                    class="dropdown-menu"
-                    aria-labelledby="dropdownMenuButton"
-                  >
-                    <a
-                      class="dropdown-item"
-                      href="#"
-                      @click.prevent="changePageSize(2)"
-                      >2</a
-                    >
-                    <a
-                      class="dropdown-item"
-                      href="#"
-                      @click.prevent="changePageSize(3)"
-                      >3</a
-                    >
-                    <a
-                      class="dropdown-item"
-                      href="#"
-                      @click.prevent="changePageSize(4)"
-                      >4</a
-                    >
-                  </div>
+                    <option value="2" :selected="pageSize == 2">2</option>
+                    <option value="3" :selected="pageSize == 3">3</option>
+                    <option value="4" :selected="pageSize == 4">4</option>
+                  </select>
                 </div>
               </nav>
             </div>
@@ -272,192 +251,179 @@
     </div>
   </ContentField>
 </template>
-<script>
+<script setup>
 import ContentField from "@/components/ContentField";
 import { ref, computed, reactive } from "vue";
 import axios from "axios";
 import { useStore } from "vuex";
-import * as bootstrap from "bootstrap";
-export default {
-  components: {
-    ContentField,
-  },
-  setup() {
-    const bots = ref();
-    const currentPage = ref(1); //当前页
-    const pageSize = ref(2); //每页显示几个数据
-    const totalBots = ref(0); //数据总数
-    const totalPages = computed(() =>
-      Math.ceil(totalBots.value / pageSize.value)
-    ); //总页数
-    //动态显示分页页码
-    const paginatedPages = computed(() => {
-      let pages = [];
-      let startPage, endPage;
+import { Modal } from "bootstrap";
+const bots = ref();
+const currentPage = ref(1); //当前页
+const pageSize = ref(2); //每页显示几个数据
+const totalBots = ref(0); //数据总数
+const totalPages = computed(() => Math.ceil(totalBots.value / pageSize.value)); //总页数
+//动态显示分页页码
+const paginatedPages = computed(() => {
+  let pages = [];
+  let startPage, endPage;
 
-      if (totalPages.value <= 10) {
-        // 总页数小于等于10，显示所有页码
-        startPage = 1;
-        endPage = totalPages.value;
-      } else {
-        // 总页数大于10，计算当前的动态范围
-        if (currentPage.value <= 6) {
-          startPage = 1;
-          endPage = 10;
-        } else if (currentPage.value + 4 >= totalPages.value) {
-          startPage = totalPages.value - 9;
-          endPage = totalPages.value;
-        } else {
-          startPage = currentPage.value - 5;
-          endPage = currentPage.value + 4;
-        }
-      }
+  if (totalPages.value <= 10) {
+    // 总页数小于等于10，显示所有页码
+    startPage = 1;
+    endPage = totalPages.value;
+  } else {
+    // 总页数大于10，计算当前的动态范围
+    if (currentPage.value <= 6) {
+      startPage = 1;
+      endPage = 10;
+    } else if (currentPage.value + 4 >= totalPages.value) {
+      startPage = totalPages.value - 9;
+      endPage = totalPages.value;
+    } else {
+      startPage = currentPage.value - 5;
+      endPage = currentPage.value + 4;
+    }
+  }
 
-      // 添加开始的省略号
-      if (startPage > 1) {
-        pages.push(1);
-        pages.push("...");
-      }
+  // 添加开始的省略号
+  if (startPage > 1) {
+    pages.push(1);
+    pages.push("...");
+  }
 
-      // 添加所有的中间页码
-      for (let i = startPage; i <= endPage; i++) {
-        pages.push(i);
-      }
+  // 添加所有的中间页码
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i);
+  }
 
-      // 添加结束的省略号
-      if (endPage < totalPages.value) {
-        pages.push("...");
-        pages.push(totalPages.value);
-      }
+  // 添加结束的省略号
+  if (endPage < totalPages.value) {
+    pages.push("...");
+    pages.push(totalPages.value);
+  }
 
-      return pages;
-    });
-    // 跳转到指定页码
-    const gotoPage = (pageNumber) => {
-      if (pageNumber < 1 || pageNumber > totalPages.value) {
-        return;
-      }
-      currentPage.value = pageNumber;
-      getList();
-    };
-
-    const store = useStore();
-    let base_url = "http://127.0.0.1:3000/user/bot/";
-    const getList = () => {
-      axios
-        .get(base_url + "getList", {
-          params: {
-            page: currentPage.value,
-            limit: pageSize.value,
-          },
-          headers: {
-            Authorization: "Bearer " + store.state.user.token, // 请求头中包含 token
-          },
-        })
-        .then((response) => {
-          const responseData = response.data;
-          console.log("获取bot列表成功: " + JSON.stringify(responseData));
-          bots.value = responseData.records; //获取到的分页bot数组
-          totalBots.value = responseData.total; //Bot总数
-        })
-        .catch((error) => {
-          console.log("获取bot列表失败: " + JSON.stringify(error));
-        });
-    };
-
-    //更改每页显示的条数
-    const changePageSize = (newPageSize) => {
-      pageSize.value = newPageSize;
-      currentPage.value = 1; // Reset to first page
-      getList(); // Method to load data based on new limit
-    };
-
-    //reactive 用于创建一个响应式的复杂类型的数据，比如对象或数组。
-    const addBotData = reactive({
-      title: "",
-      description: "",
-      content: "",
-      error_message: "",
-    });
-    //添加机器人时的数据校验
-    const validateInput = (data) => {
-      // Reset error message before validation
-      data.error_message = "";
-
-      // Validate title
-      if (!data.title) {
-        data.error_message += "标题不能为空";
-      } else if (data.title.length > 100) {
-        data.error_message += "标题长度不能大于100";
-      }
-
-      // Validate description
-      if (data.description.length > 100) {
-        data.error_message += "简介长度不能超过100";
-      }
-
-      // Validate content
-      if (!data.content) {
-        data.error_message += "代码不能为空。";
-      } else if (data.content.length > 1000000) {
-        data.error_message += "代码长度不能超过1000000。";
-      }
-
-      // If error_message is empty, validation passed
-      return data.error_message === "";
-    };
-
-    const addBot = (data) => {
-      if (!validateInput(data)) {
-        setTimeout(() => (addBotData.error_message = ""), 1500);
-        return;
-      }
-      axios
-        .post(
-          base_url + "add",
-          {
-            title: data.title,
-            description: data.description,
-            content: data.content,
-          },
-          {
-            headers: {
-              Authorization: "Bearer " + store.state.user.token, // 请求头中包含 token
-            },
-          }
-        )
-        .then((response) => {
-          const responseData = response.data;
-          data.error_message = responseData.error_message;
-          if (responseData.error_message == "success") {
-            document.querySelector('button[data-bs-dismiss="modal"]').click();
-            new bootstrap.Modal(document.getElementById("successModal")).show();
-            getList();
-          } else {
-            console.log("添加bot失败: " + JSON.stringify(responseData));
-          }
-        })
-        .catch((error) => {
-          data.error_message = error;
-          console.log("添加bot失败: " + JSON.stringify(error));
-        });
-      setTimeout(() => (addBotData.error_message = ""), 1500);
-    };
-
-    getList();
-    return {
-      bots,
-      currentPage,
-      totalPages,
-      pageSize,
-      gotoPage,
-      getList,
-      addBot,
-      addBotData,
-      changePageSize,
-      paginatedPages,
-    };
-  },
+  return pages;
+});
+// 跳转到指定页码
+const gotoPage = (pageNumber) => {
+  if (pageNumber < 1 || pageNumber > totalPages.value) {
+    return;
+  }
+  currentPage.value = pageNumber;
+  getList();
 };
+
+const store = useStore();
+let base_url = "http://127.0.0.1:3000/user/bot/";
+const getList = () => {
+  axios
+    .get(base_url + "getList", {
+      params: {
+        page: currentPage.value,
+        limit: pageSize.value,
+      },
+      headers: {
+        Authorization: "Bearer " + store.state.user.token, // 请求头中包含 token
+      },
+    })
+    .then((response) => {
+      const responseData = response.data;
+      console.log("获取bot列表成功: " + JSON.stringify(responseData));
+      bots.value = responseData.records; //获取到的分页bot数组
+      totalBots.value = responseData.total; //Bot总数
+    })
+    .catch((error) => {
+      console.log("获取bot列表失败: " + JSON.stringify(error));
+    });
+};
+
+//更改每页显示的条数
+const changePageSize = (newPageSize) => {
+  pageSize.value = newPageSize;
+  currentPage.value = 1; // Reset to first page
+  getList(); // Method to load data based on new limit
+};
+
+//reactive 用于创建一个响应式的复杂类型的数据，比如对象或数组。
+const addBotData = reactive({
+  title: "",
+  description: "",
+  content: "",
+  error_message: "",
+});
+//添加机器人时的数据校验
+const validateInput = (data) => {
+  // Reset error message before validation
+  data.error_message = "";
+
+  // Validate title
+  if (!data.title) {
+    data.error_message += "标题不能为空";
+  } else if (data.title.length > 100) {
+    data.error_message += "标题长度不能大于100";
+  }
+
+  // Validate description
+  if (data.description.length > 100) {
+    data.error_message += "简介长度不能超过100";
+  }
+
+  // Validate content
+  if (!data.content) {
+    data.error_message += "代码不能为空。";
+  } else if (data.content.length > 1000000) {
+    data.error_message += "代码长度不能超过1000000。";
+  }
+
+  // If error_message is empty, validation passed
+  return data.error_message === "";
+};
+
+const addBot = (data) => {
+  if (!validateInput(data)) {
+    setTimeout(() => (addBotData.error_message = ""), 1500);
+    return;
+  }
+  axios
+    .post(
+      base_url + "add",
+      {
+        title: data.title,
+        description: data.description,
+        content: data.content,
+      },
+      {
+        headers: {
+          Authorization: "Bearer " + store.state.user.token, // 请求头中包含 token
+        },
+      }
+    )
+    .then((response) => {
+      const responseData = response.data;
+      data.error_message = responseData.error_message;
+      if (responseData.error_message == "success") {
+        document.querySelector('button[data-bs-dismiss="modal"]').click();
+        new Modal(document.getElementById("successModal")).show();
+        getList();
+      } else {
+        console.log("添加bot失败: " + JSON.stringify(responseData));
+      }
+    })
+    .catch((error) => {
+      data.error_message = error;
+      console.log("添加bot失败: " + JSON.stringify(error));
+    });
+  setTimeout(() => (addBotData.error_message = ""), 1500);
+};
+
+getList();
 </script>
-<style lang=""></style>
+<style scoped>
+.custom-select {
+  border: 1px solid #ced4da; /* 添加边框颜色 */
+  border-radius: 0.25rem; /* 添加圆角 */
+  color: #495057; /* 设置文本颜色 */
+  background-color: #fff; /* 设置背景颜色 */
+  width: 60px;
+}
+</style>

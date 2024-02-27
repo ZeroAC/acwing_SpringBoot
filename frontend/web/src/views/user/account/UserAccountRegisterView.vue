@@ -69,54 +69,37 @@
     </div>
   </ContentField>
 </template>
-<script>
+<script setup>
 import ContentField from "@/components/ContentField";
 import { useStore } from "vuex";
 import { ref } from "vue";
 import router from "@/router/index";
-export default {
-  components: {
-    ContentField,
-  },
-  setup() {
-    const store = useStore();
-    let username = ref("");
-    let password = ref("");
-    let confirmedPassword = ref("");
-    let error_message = ref("");
-    let showSuccessMessage = ref(false);
-
-    const register = () => {
-      error_message.value = "";
-      store.dispatch("register", {
-        username: username.value,
-        password: password.value,
-        confirmedPassword: confirmedPassword.value,
-        success(data) {
-          console.log("注册成功: " + JSON.stringify(data));
-          // 注册成功
-          showSuccessMessage.value = true; // 显示注册成功信息
-          // 设置一个定时器，在显示成功信息几秒后跳转到登录页面
-          setTimeout(() => {
-            router.push({ name: "user_account_login" });
-          }, 2000); // 3秒后跳转
-        },
-        error(data) {
-          console.log("注册失败: " + JSON.stringify(data));
-          error_message.value = data.error_message;
-        },
-      });
-    };
-    // 返回组件的响应式数据和函数
-    return {
-      username,
-      password,
-      confirmedPassword,
-      error_message,
-      showSuccessMessage,
-      register,
-    };
-  },
+const store = useStore();
+const username = ref("");
+const password = ref("");
+const confirmedPassword = ref("");
+const error_message = ref("");
+const showSuccessMessage = ref(false);
+const register = () => {
+  error_message.value = "";
+  store.dispatch("register", {
+    username: username.value,
+    password: password.value,
+    confirmedPassword: confirmedPassword.value,
+    success(data) {
+      console.log("注册成功: " + JSON.stringify(data));
+      // 注册成功
+      showSuccessMessage.value = true; // 显示注册成功信息
+      // 设置一个定时器，在显示成功信息几秒后跳转到登录页面
+      setTimeout(() => {
+        router.push({ name: "user_account_login" });
+      }, 2000); // 3秒后跳转
+    },
+    error(data) {
+      console.log("注册失败: " + JSON.stringify(data));
+      error_message.value = data.error_message;
+    },
+  });
 };
 </script>
 <style scoped></style>

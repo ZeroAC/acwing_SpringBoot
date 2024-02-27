@@ -24,7 +24,7 @@ public class BotControl extends BasisControl {
     public ResponseEntity<Map<String, String>> add(@RequestBody Map<String, String> map) {
         logger.info("add Bot map:{}", map);
         User user = getUser();
-        ResponseEntity<Map<String, String>> response = ResponseEntity.ok(botService.add(user, map));
+        ResponseEntity<Map<String, String>> response = getResponse(botService.add(user, map));
         logger.info("add Bot response:{}", response);
         return response;
     }
