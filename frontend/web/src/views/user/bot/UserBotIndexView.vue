@@ -29,7 +29,7 @@
                 aria-labelledby="add-bot-modal-label"
                 aria-hidden="true"
               >
-                <div class="modal-dialog">
+                <div class="modal-dialog modal-xl">
                   <div class="modal-content">
                     <div class="modal-header">
                       <h5 class="modal-title" id="add-bot-modal-label">
@@ -71,13 +71,23 @@
                         <label for="add-bot-content" class="form-label"
                           >代码</label
                         >
-                        <textarea
-                          class="form-control"
-                          id="add-bot-content"
-                          rows="5"
-                          v-model="addBotData.content"
-                          placeholder="请输入 Bot 代码"
-                        ></textarea>
+                        <div>
+                          <select v-model="selectedLanguage">
+                            <option value="javascript">JavaScript</option>
+                            <option value="python">Python</option>
+                            <option value="c_cpp">C/C++</option>
+                            <!-- Add other languages as options here -->
+                          </select>
+
+                          <VAceEditor
+                            v-model:value="addBotData.content"
+                            id="editor"
+                            @init="editorInit"
+                            :lang="selectedLanguage"
+                            theme="textmate"
+                            style="height: 300px"
+                          />
+                        </div>
                       </div>
                     </div>
                     <div class="modal-footer">
@@ -183,7 +193,7 @@
                         tabindex="-1"
                       >
                         <!--修改Bot模态框-->
-                        <div class="modal-dialog">
+                        <div class="modal-dialog modal-xl">
                           <div class="modal-content">
                             <div class="modal-header">
                               <h5 class="modal-title" id="exampleModalLabel">
@@ -225,12 +235,24 @@
                                 <label for="add-bot-code" class="form-label"
                                   >代码</label
                                 >
-                                <textarea
-                                  v-model="bot.content"
-                                  class="form-control"
-                                  rows="5"
-                                  placeholder="请输入 Bot 代码"
-                                ></textarea>
+                                <div>
+                                  <select v-model="selectedLanguage">
+                                    <option value="javascript">
+                                      JavaScript
+                                    </option>
+                                    <option value="python">Python</option>
+                                    <option value="c_cpp">C/C++</option>
+                                    <!-- Add other languages as options here -->
+                                  </select>
+                                  <VAceEditor
+                                    v-model:value="bot.content"
+                                    id="editor"
+                                    @init="editorInit"
+                                    :lang="selectedLanguage"
+                                    theme="textmate"
+                                    style="height: 300px"
+                                  />
+                                </div>
                               </div>
                             </div>
                             <div class="modal-footer">
@@ -337,10 +359,55 @@
 </template>
 <script setup>
 import ContentField from "@/components/ContentField";
-import { ref, computed, reactive } from "vue";
+import { ref, computed, reactive, watch } from "vue";
 import axios from "axios";
 import { useStore } from "vuex";
 import { Modal } from "bootstrap";
+import { VAceEditor } from "vue3-ace-editor";
+import "ace-builds/src-noconflict/ace";
+// 引入补全和代码段的相关模块
+import "ace-builds/src-noconflict/ext-language_tools";
+import "ace-builds/src-noconflict/mode-c_cpp";
+import "ace-builds/src-noconflict/mode-python";
+import "ace-builds/src-noconflict/mode-javascript";
+import "ace-builds/src-noconflict/theme-textmate";
+// 初始化默认语言为 C/C++
+const selectedLanguage = ref("c_cpp");
+// 创建一个 ref 来存储编辑器实例
+const editor = ref(null);
+
+// 编辑器初始化函数
+const editorInit = (editorInstance) => {
+  // 存储编辑器实例到 ref
+  editor.value = editorInstance;
+  // 设置默认的模式和主题
+  editor.value.setTheme("ace/theme/textmate");
+  changeLanguage(selectedLanguage.value);
+
+  // 设置编辑器选项
+  editor.value.setOptions({
+    fontFamily: "monospace",
+    fontSize: "18px",
+    showGutter: true,
+    showPrintMargin: false,
+    highlightActiveLine: true,
+    highlightSelectedWord: true,
+    enableSnippets: true,
+    enableBasicAutocompletion: true,
+    enableLiveAutocompletion: true,
+  });
+};
+
+// 动态更改语言模式的函数
+const changeLanguage = (language) => {
+  // 根据选择的语言动态加载模式
+  editor.value.session.setMode(`ace/mode/${language}`);
+};
+
+// 监听 selectedLanguage 的改变并更新编辑器模式
+watch(selectedLanguage, (newValue) => {
+  changeLanguage(newValue);
+});
 const bots = ref();
 const currentPage = ref(1); //当前页
 const pageSize = ref(2); //每页显示几个数据
@@ -580,5 +647,12 @@ getList();
   color: #495057; /* 设置文本颜色 */
   background-color: #fff; /* 设置背景颜色 */
   width: 60px;
+}
+
+/* 自定义编辑器样式 */
+#editor {
+  border: 1px solid #e7e7e7;
+  border-radius: 4px;
+  /* 可以根据需要设置其他样式 */
 }
 </style>
