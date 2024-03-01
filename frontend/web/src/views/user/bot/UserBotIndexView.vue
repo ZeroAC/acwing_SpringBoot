@@ -302,8 +302,8 @@
                   </li>
                   <!-- 中间的页码 -->
                   <li
-                    v-for="page in paginatedPages"
-                    :key="page"
+                    v-for="(page, index) in paginatedPages"
+                    :key="`${page}-${index}`"
                     class="page-item"
                     :class="{
                       active: currentPage === page,
@@ -440,7 +440,10 @@ const paginatedPages = computed(() => {
   // 添加开始的省略号
   if (startPage > 1) {
     pages.push(1);
-    pages.push("...");
+    if (startPage > 2 && pages[1] != "...") {
+      // 避免 "1 ... 2" 的情况发生
+      pages.push("...");
+    }
   }
 
   // 添加所有的中间页码
@@ -450,10 +453,16 @@ const paginatedPages = computed(() => {
 
   // 添加结束的省略号
   if (endPage < totalPages.value) {
-    pages.push("...");
+    if (
+      endPage < totalPages.value - 1 &&
+      pages[totalPages.value - 2] != "..."
+    ) {
+      // 避免 "倒数第二页 ... 最后一页" 的情况发生
+      pages.push("...");
+    }
     pages.push(totalPages.value);
   }
-
+  console.log(`output->pages`, pages);
   return pages;
 });
 // 跳转到指定页码
