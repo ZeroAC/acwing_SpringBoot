@@ -5,6 +5,7 @@ let base_url = "http://127.0.0.1:3000/user/account/";
 
 // 使用 export default 导出 Vuex store 对象
 export default {
+  namespaced: true,
   // state 对象包含了该模块的状态
   state: {
     id: "", // 用户的 ID

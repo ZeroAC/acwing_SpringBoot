@@ -42,68 +42,58 @@
     </div>
   </ContentField>
 </template>
-<script>
+<script setup>
 import ContentField from "@/components/ContentField";
 import { useStore } from "vuex";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import router from "@/router/index";
-export default {
-  components: {
-    ContentField,
-  },
-  setup() {
-    const store = useStore();
-    let username = ref("");
-    let password = ref("");
-    let error_message = ref("");
+const store = useStore();
+let username = ref("");
+let password = ref("");
+let error_message = ref("");
+onMounted(() => {
+  //若已经登录过，则获取信息跳转到首页
+  const jwt_token = localStorage.getItem("jwt_token");
+  console.log(`output->${jwt_token}`);
+  if (jwt_token) {
+    store.commit("user/updateToken", jwt_token);
+    store.dispatch("user/get_info", {
+      success() {
+        if (router.currentRoute.value.name !== "home_index") {
+          router.push({ name: "home_index" });
+        }
+      },
+      error() {},
+    });
+  } else {
+    //若不存在token，则无需拉取用户信息，则会显示登录注册页面
+    store.commit("user/updatePullingInfo", false);
+  }
+});
 
-    //若已经登录过，则获取信息跳转到首页
-    const jwt_token = localStorage.getItem("jwt_token");
-    if (jwt_token) {
-      store.commit("updateToken", jwt_token);
-      store.dispatch("get_info", {
-        success() {
+const login = () => {
+  error_message.value = "";
+  store.dispatch("user/login", {
+    username: username.value,
+    password: password.value,
+    success(data) {
+      console.log("登陆成功: " + JSON.stringify(data));
+      store.dispatch("user/get_info", {
+        success(info) {
+          console.log("用户信息获取成功: " + JSON.stringify(info));
           router.push({ name: "home_index" });
         },
-        error() {},
-      });
-    } else {
-      //若不存在token，则无需拉取用户信息，则会显示登录注册页面
-      store.commit("updatePullingInfo", false);
-    }
-
-    const login = () => {
-      error_message.value = "";
-      store.dispatch("login", {
-        username: username.value,
-        password: password.value,
-        success(data) {
-          console.log("登陆成功: " + JSON.stringify(data));
-          store.dispatch("get_info", {
-            success(info) {
-              console.log("用户信息获取成功: " + JSON.stringify(info));
-              router.push({ name: "home_index" });
-            },
-            error(info) {
-              console.log("用户信息获取失败: " + JSON.stringify(info));
-              error_message.value = data.error_message;
-            },
-          });
-        },
-        error(data) {
-          console.log("登录失败: " + JSON.stringify(data));
+        error(info) {
+          console.log("用户信息获取失败: " + JSON.stringify(info));
           error_message.value = data.error_message;
         },
       });
-    };
-    // 返回组件的响应式数据和函数
-    return {
-      username,
-      password,
-      error_message,
-      login,
-    };
-  },
+    },
+    error(data) {
+      console.log("登录失败: " + JSON.stringify(data));
+      error_message.value = data.error_message;
+    },
+  });
 };
 </script>
 <style scoped>

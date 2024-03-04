@@ -82,7 +82,7 @@ const error_message = ref("");
 const showSuccessMessage = ref(false);
 const register = () => {
   error_message.value = "";
-  store.dispatch("register", {
+  store.dispatch("user/register", {
     username: username.value,
     password: password.value,
     confirmedPassword: confirmedPassword.value,

@@ -80,4 +80,15 @@ public class JwtUtil {
                 .parseClaimsJws(jwt) // 解析JWT
                 .getBody(); // 获取JWT的payload部分
     }
+
+    public static Integer getUserId(String token) {
+        int userId = -1; //-1表示不存在
+        try {
+            Claims claims = JwtUtil.parseJwt(token);
+            userId = Integer.parseInt(claims.getSubject());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return userId;
+    }
 }

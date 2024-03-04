@@ -56,6 +56,7 @@ public class SecurityConfig {
                                 .antMatchers("/user/account/token", "/user/account/register").permitAll()
                                 // 允许所有用户对所有OPTIONS请求
                                 .antMatchers(HttpMethod.OPTIONS).permitAll()
+                                .antMatchers("/websocket/**").permitAll()
                                 // 任何请求都需要认证
                                 .anyRequest().authenticated())
                 // 添加自定义JWT过滤器
