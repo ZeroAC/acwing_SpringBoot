@@ -85,7 +85,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const store = useStore();
   // 检查用户是否已经登录，这里假设登录状态保存在Vuex的store中
-  const isLoggedIn = store.getters.isUserLoggedIn;
+  const isLoggedIn = store.getters["user/isUserLoggedIn"];
 
   // 检查目标路由是否需要认证
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);

@@ -138,7 +138,7 @@ export default {
   setup() {
     const store = useStore();
     const logout = () => {
-      store.dispatch("logout");
+      store.dispatch("user/logout");
       router.push({ name: "user_account_login" });
     };
     return {

@@ -42,13 +42,20 @@ export default {
         commit("updateSocket", socket); // 更新state中的socket实例
       };
 
-      // 接收消息时触发
-      socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        console.log("接收到消息:", data);
-        // 根据接收到的消息内容更新状态
-        // 例如，如果消息中包含对手的信息:
-        // commit('updateOpponent', { username: data.username, photo: data.photo });
+      // 接收后端消息时触发 即匹配成功两秒后跳转到对战界面
+      socket.onmessage = (msg) => {
+        console.log("后端发来的匹配结果:", msg.data);
+        const data = JSON.parse(msg.data);
+        if (data.event === "start-matching") {
+          commit("updateOpponent", {
+            username: data.opponentUsername,
+            photo: data.opponentPhoto,
+          });
+          //匹配成功两秒后跳转到对战界面
+          setTimeout(() => {
+            commit("updateStatus", "playing");
+          }, 2000);
+        }
       };
 
       // 出现错误时触发
@@ -60,6 +67,7 @@ export default {
       // 连接关闭时触发
       socket.onclose = () => {
         commit("closeSocket");
+        commit("updateStatus", "matching");
       };
       // 注意：在实际项目中，应该处理连接失败的情况
     },

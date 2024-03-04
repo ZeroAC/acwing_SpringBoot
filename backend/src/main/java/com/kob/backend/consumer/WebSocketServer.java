@@ -1,9 +1,12 @@
 package com.kob.backend.consumer;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kob.backend.dao.UserDao;
 import com.kob.backend.pojo.User;
+import com.kob.backend.service.pk.GameMatchService;
 import com.kob.backend.utils.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +32,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WebSocketServer {
     //日志
     private static final Logger logger = LoggerFactory.getLogger(WebSocketServer.class);
-    // 因为 WebSocket 服务器端点不是由 Spring 管理，所以设置为静态 从而单例
+    //用户Dao
     private static volatile UserDao userDao;
+    //匹配服务
+    private static volatile GameMatchService gameMatchService;
+
+    @Autowired
+    public void setGameMatchService(GameMatchService service) {
+        gameMatchService = service;
+    }
 
     // 静态 setter 方法来设置共享的 UserDao 实例
     @Autowired
@@ -39,7 +49,7 @@ public class WebSocketServer {
     }
 
     //存储所有用户链接(与线程安全有关的哈希表，将userID映射到相应用户的WebSocketServer)
-    private static ConcurrentHashMap<Integer, WebSocketServer> users = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Integer, WebSocketServer> USERS = new ConcurrentHashMap<>();
 
     // 当前用户
     private User user;
@@ -47,7 +57,7 @@ public class WebSocketServer {
     // 前端后端互相发信息,每个链接用session维护
     private Session session;
 
-    // 使用单例模式的ObjectMapper
+    // 使用单例模式的ObjectMapper, 调试用,结构体转JSON
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     String stringify(Object obj) throws JsonProcessingException {
@@ -78,7 +88,7 @@ public class WebSocketServer {
 
         this.user = connectedUser;
         // 将用户链接添加到会话管理器 由于是哈希表以id为键，保证了每个用户只能有一个socket链接
-        users.put(userId, this);
+        USERS.put(userId, this);
     }
 
     /**
@@ -87,10 +97,10 @@ public class WebSocketServer {
     @OnClose
     public void onClose() {
         // 在这里处理连接关闭时的操作，例如从会话管理器中移除会话、清理资源等
-        logger.info("客户端断开连接");
+        logger.info("客户{}断开连接", this.user.getId());
         // 从会话管理器中移除会话
         if (this.user != null) {
-            users.remove(this.user.getId());
+            USERS.remove(this.user.getId());
         }
     }
 
@@ -104,7 +114,17 @@ public class WebSocketServer {
     public void onMessage(String message, Session session) {
         // 在这里处理从客户端收到的消息，例如广播消息、消息处理等
         logger.info("收到客户端消息：{}", message);
+        JSONObject jsonObject = JSON.parseObject(message);
+        String event = jsonObject.getString("event");
+        if ("start-matching".equals(event)) {
+            logger.info("用户{}开始匹配", this.user.getId());
+            gameMatchService.startMatching(USERS, this.user);
+        } else if ("stop-matching".equals(event)) {
+            logger.info("用户{}停止匹配", this.user.getId());
+            gameMatchService.stopMatching(USERS, this.user);
+        }
     }
+
 
     //后端向前端发送消息
     public void sendMessage(String message) {
