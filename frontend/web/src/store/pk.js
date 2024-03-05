@@ -7,6 +7,7 @@ export default {
     opponentUsername: "", //对手名
     opponentPhoto: "", //对手头像
     status: "matching", //matching表示匹配界面，playing表示对战界面
+    gameMap: null, //对战界面的地图数据
   },
   getters: {
     socket: (state) => state.socket,
@@ -21,6 +22,9 @@ export default {
     updateOpponent(state, { username, photo }) {
       state.opponentUsername = username;
       state.opponentPhoto = photo;
+    },
+    updateGameMap(state, gameMap) {
+      state.gameMap = gameMap;
     },
     updateStatus(state, status) {
       state.status = status;
@@ -51,6 +55,7 @@ export default {
             username: data.opponentUsername,
             photo: data.opponentPhoto,
           });
+          commit("updateGameMap", data.gameMap);
           //匹配成功两秒后跳转到对战界面
           setTimeout(() => {
             commit("updateStatus", "playing");

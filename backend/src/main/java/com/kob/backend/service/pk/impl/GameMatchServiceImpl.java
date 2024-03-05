@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.kob.backend.consumer.WebSocketServer;
 import com.kob.backend.pojo.User;
 import com.kob.backend.service.pk.GameMatchService;
+import com.kob.backend.service.pk.model.GameMap;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -18,10 +20,14 @@ import java.util.concurrent.ThreadLocalRandom;
  * @author zeroac
  */
 @Service
+@RequiredArgsConstructor
 public class GameMatchServiceImpl implements GameMatchService {
     private static final Logger logger = LoggerFactory.getLogger(GameMatchServiceImpl.class);
     //线程安全的匹配池
     private static final ConcurrentLinkedQueue<User> MATCH_POOL = new ConcurrentLinkedQueue<>();
+
+    //地图数据生成
+    private final GameMap gameMap;
 
     @Override
     public void startMatching(ConcurrentMap<Integer, WebSocketServer> users, User user) {
@@ -44,8 +50,9 @@ public class GameMatchServiceImpl implements GameMatchService {
                 // 尝试从匹配池中移除选中的用户
                 if (MATCH_POOL.remove(first) && MATCH_POOL.remove(second)) {
                     logger.info("匹配成功，first: {}, second: {}", first.getId(), second.getId());
-                    sendMatchMessage(users, first, second);
-                    sendMatchMessage(users, second, first);
+                    gameMap.generateMap();
+                    sendMatchMessage(users, first, second, gameMap.getG());
+                    sendMatchMessage(users, second, first, gameMap.getG());
                     break;
                 } else {
                     // 如果移除失败（可能因为用户已被其他线程匹配），则重新尝试
@@ -64,11 +71,12 @@ public class GameMatchServiceImpl implements GameMatchService {
      * @param a     匹配方
      * @param b     被匹配方
      */
-    private void sendMatchMessage(ConcurrentMap<Integer, WebSocketServer> users, User a, User b) {
+    private void sendMatchMessage(ConcurrentMap<Integer, WebSocketServer> users, User a, User b, boolean[][] g) {
         JSONObject resp = new JSONObject();
         resp.put("event", "start-matching"); // 事件类型
         resp.put("opponentUsername", b.getUsername()); // 对手的用户名
         resp.put("opponentPhoto", b.getPhoto()); // 对手的头像
+        resp.put("gameMap", g); // pk的游戏地图
         // 通过 WebSocket 向a发送匹配成功的消息
         users.get(a.getId()).sendMessage(resp.toJSONString());
     }
