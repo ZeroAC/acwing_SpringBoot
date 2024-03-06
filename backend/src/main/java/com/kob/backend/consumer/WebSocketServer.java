@@ -106,6 +106,7 @@ public class WebSocketServer {
 
     /**
      * 当服务器接收到客户端发送的消息时触发。
+     * 作为websocket的路由
      *
      * @param message 客户端发送的消息
      * @param session 客户端与服务器端的WebSocket会话对象

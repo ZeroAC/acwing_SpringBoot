@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.kob.backend.consumer.WebSocketServer;
 import com.kob.backend.pojo.User;
 import com.kob.backend.service.pk.GameMatchService;
+import com.kob.backend.service.pk.GameService;
 import com.kob.backend.service.pk.model.GameMap;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -53,6 +54,8 @@ public class GameMatchServiceImpl implements GameMatchService {
                     gameMap.generateMap();
                     sendMatchMessage(users, first, second, gameMap.getG());
                     sendMatchMessage(users, second, first, gameMap.getG());
+                    GameService gameService = new GameServiceImpl(first.getId(), second.getId(), gameMap.getG());  //初始化游戏
+                    gameService.start();//启动该线程
                     break;
                 } else {
                     // 如果移除失败（可能因为用户已被其他线程匹配），则重新尝试

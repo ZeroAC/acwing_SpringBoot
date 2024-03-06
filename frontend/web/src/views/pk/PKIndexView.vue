@@ -14,7 +14,9 @@ onMounted(() => {
 });
 //组件销毁前关闭socket
 onUnmounted(() => {
-  store.state.pk.socket.close();
+  if (store.state.pk.socket) {
+    store.state.pk.socket.close();
+  }
 });
 </script>
 <style lang=""></style>

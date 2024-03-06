@@ -16,7 +16,7 @@ public interface GameMatchService {
      * @param users 所有正在连接的用户和他们的 WebSocket 连接。
      * @param user  想要开始匹配的用户。
      */
-    public void startMatching(ConcurrentMap<Integer, WebSocketServer> users, User user);
+    void startMatching(ConcurrentMap<Integer, WebSocketServer> users, User user);
 
     /**
      * 停止匹配方法。
@@ -25,5 +25,5 @@ public interface GameMatchService {
      * @param users 所有正在连接的用户和他们的 WebSocket 连接。
      * @param user  想要停止匹配的用户。
      */
-    public void stopMatching(ConcurrentMap<Integer, WebSocketServer> users, User user);
+    void stopMatching(ConcurrentMap<Integer, WebSocketServer> users, User user);
 }

@@ -1,5 +1,6 @@
 package com.kob.backend.service.pk.model;
 
+import lombok.Data;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -8,7 +9,9 @@ import java.util.Random;
 
 /**
  * @author zeroac
+ * 匹配成功后，生成地图供玩家PK
  */
+@Data
 @Component
 public class GameMap {
     private static final Random RANDOM = new Random();
