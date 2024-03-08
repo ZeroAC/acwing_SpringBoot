@@ -84,13 +84,29 @@ public class GameMap {
         return isConnected(this.rows - 2, 1, 1, this.cols - 2);
     }
 
+    private boolean[][] deepCopyBooleanArray(boolean[][] original) {
+        if (original == null) {
+            return new boolean[0][0];
+        }
 
-    //生成有效地图
-    public void generateMap() {
+        final boolean[][] result = new boolean[original.length][];
+        for (int i = 0; i < original.length; i++) {
+            result[i] = original[i] != null ? new boolean[original[i].length] : null;
+            if (original[i] != null) {
+                System.arraycopy(original[i], 0, result[i], 0, original[i].length);
+            }
+        }
+        return result;
+    }
+
+
+    //生成有效地图 可能多个匹配成功的同时调用，故而需要 同步 线程安全
+    public synchronized boolean[][] generateMap() {
         for (int i = 0; i < 1000; i++) {
             if (draw()) {
                 break;
             }
         }
+        return deepCopyBooleanArray(this.g);
     }
 }

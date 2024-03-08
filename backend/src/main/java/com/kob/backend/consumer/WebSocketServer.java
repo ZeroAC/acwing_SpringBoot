@@ -35,7 +35,7 @@ public class WebSocketServer {
     //用户Dao
     private static volatile UserDao userDao;
     //匹配服务
-    private static volatile GameMatchService gameMatchService;
+    private static GameMatchService gameMatchService;
 
     @Autowired
     public void setGameMatchService(GameMatchService service) {

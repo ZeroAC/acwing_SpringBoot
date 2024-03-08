@@ -10,23 +10,9 @@ public class GameServiceImpl implements Runnable, GameService {
     private int userIdA;
     private int userIdB;
 
-    private boolean[][] deepCopyBooleanArray(boolean[][] original) {
-        if (original == null) {
-            return new boolean[0][0];
-        }
-
-        final boolean[][] result = new boolean[original.length][];
-        for (int i = 0; i < original.length; i++) {
-            result[i] = original[i] != null ? new boolean[original[i].length] : null;
-            if (original[i] != null) {
-                System.arraycopy(original[i], 0, result[i], 0, original[i].length);
-            }
-        }
-        return result;
-    }
 
     public GameServiceImpl(int userIdA, int userIdB, boolean[][] g) {
-        this.g = deepCopyBooleanArray(g);
+        this.g = g;
         this.userIdA = userIdA;
         this.userIdB = userIdB;
     }

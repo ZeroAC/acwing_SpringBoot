@@ -10,11 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author zeroac
@@ -26,6 +25,10 @@ public class GameMatchServiceImpl implements GameMatchService {
     //线程安全的匹配池
     private static final ConcurrentLinkedQueue<User> MATCH_POOL = new ConcurrentLinkedQueue<>();
 
+    //最大游戏线程数
+    private static final int MAX_GAME_THREADS = 100; // Adjust this value based on your server capacity
+    //游戏线程池
+    private static final ExecutorService gameExecutorService = Executors.newFixedThreadPool(MAX_GAME_THREADS);
     //地图数据生成
     private final GameMap gameMap;
 
@@ -33,34 +36,36 @@ public class GameMatchServiceImpl implements GameMatchService {
     public void startMatching(ConcurrentMap<Integer, WebSocketServer> users, User user) {
         logger.info("开始匹配");
         MATCH_POOL.add(user);
+        attemptRandomMatch(users);
+    }
 
-        if (MATCH_POOL.size() >= 2) {
-            User first = null;
-            User second = null;
 
-            //尝试随机匹配
-            List<User> usersList = new ArrayList<>(MATCH_POOL);
-            while (usersList.size() >= 2) {
-                int firstIndex = ThreadLocalRandom.current().nextInt(usersList.size());
-                first = usersList.remove(firstIndex);
-
-                int secondIndex = ThreadLocalRandom.current().nextInt(usersList.size());
-                second = usersList.remove(secondIndex);
-
-                // 尝试从匹配池中移除选中的用户
-                if (MATCH_POOL.remove(first) && MATCH_POOL.remove(second)) {
-                    logger.info("匹配成功，first: {}, second: {}", first.getId(), second.getId());
-                    gameMap.generateMap();
-                    sendMatchMessage(users, first, second, gameMap.getG());
-                    sendMatchMessage(users, second, first, gameMap.getG());
-                    //启动该游戏线程
-                    new Thread(new GameServiceImpl(first.getId(), second.getId(), gameMap.getG())).start();
-                    break;
-                } else {
-                    // 如果移除失败（可能因为用户已被其他线程匹配），则重新尝试
-                    usersList.add(first);
-                    usersList.add(second);
-                }
+    //处理匹配逻辑
+    private void attemptRandomMatch(ConcurrentMap<Integer, WebSocketServer> users) {
+        while (true) {
+            User first = MATCH_POOL.poll();
+            User second = MATCH_POOL.poll();
+            if (first != null && second != null) {
+                logger.info("匹配成功，first: {}, second: {}", first.getId(), second.getId());
+                //生成一个新地图
+                boolean[][] g = gameMap.generateMap();
+                sendMatchMessage(users, first, second, g);
+                sendMatchMessage(users, second, first, g);
+                gameExecutorService.submit(new GameServiceImpl(first.getId(), second.getId(), g));
+                return;
+            }
+            // 如果没有足够的玩家进行匹配，把已经取出的玩家重新放回队列
+            if (first != null) {
+                MATCH_POOL.offer(first);
+            }
+            if (second != null) {
+                MATCH_POOL.offer(second);
+            }
+            // 休眠一段时间后再次尝试
+            try {
+                Thread.sleep(1000); // 这里可以根据实际情况调整休眠时间
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
     }
