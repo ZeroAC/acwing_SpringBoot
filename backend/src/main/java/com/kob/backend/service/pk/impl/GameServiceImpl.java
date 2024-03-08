@@ -5,8 +5,10 @@ import com.kob.backend.service.pk.GameService;
 /**
  * @author zeroac
  */
-public class GameServiceImpl extends Thread implements GameService {
+public class GameServiceImpl implements Runnable, GameService {
     private boolean g[][];
+    private int userIdA;
+    private int userIdB;
 
     private boolean[][] deepCopyBooleanArray(boolean[][] original) {
         if (original == null) {
@@ -25,6 +27,8 @@ public class GameServiceImpl extends Thread implements GameService {
 
     public GameServiceImpl(int userIdA, int userIdB, boolean[][] g) {
         this.g = deepCopyBooleanArray(g);
+        this.userIdA = userIdA;
+        this.userIdB = userIdB;
     }
 
 
