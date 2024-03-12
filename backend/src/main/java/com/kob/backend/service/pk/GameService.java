@@ -1,16 +1,13 @@
 package com.kob.backend.service.pk;
 
+import com.kob.backend.service.pk.model.Player;
+
 /**
  * 提供了玩家对战游戏的服务接口定义。
  *
  * @author zeroac
  */
 public interface GameService {
-
-    /**
-     * 开始游戏
-     */
-    void start();
 
     /**
      * 设置玩家A的下一步动作。
@@ -40,14 +37,8 @@ public interface GameService {
      */
     boolean judge();
 
-    /**
-     * 向玩家发送当前移动的信息。
-     */
-    void sendMove();
+    Player getPlayerA();
 
-    /**
-     * 发送游戏结果给玩家。
-     */
-    void sendGameResult();
+    Player getPlayerB();
 
 }

@@ -16,7 +16,10 @@ export default {
     // 当组件挂载完成后，如果 canvas 上下文和父元素都存在，则创建一个新的 GameMapObject 实例
     onMounted(() => {
       if (ctx.value && parent.value) {
-        new GameMapObject(ctx.value.getContext("2d"), parent.value, store);
+        store.commit(
+          "pk/updateGameObject",
+          new GameMapObject(ctx.value.getContext("2d"), parent.value, store)
+        );
       }
     });
 

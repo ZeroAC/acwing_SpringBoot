@@ -129,6 +129,7 @@ export default {
         })
         .catch((error) => {
           data.error(error);
+          context.dispatch("logout");
         });
     },
     logout(context) {

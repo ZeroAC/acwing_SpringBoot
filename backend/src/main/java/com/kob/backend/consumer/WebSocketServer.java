@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kob.backend.dao.UserDao;
 import com.kob.backend.pojo.User;
 import com.kob.backend.service.pk.GameMatchService;
+import com.kob.backend.service.pk.GameService;
 import com.kob.backend.utils.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,13 @@ public class WebSocketServer {
     //匹配服务
     private static GameMatchService gameMatchService;
 
+    //当前的用户所在的游戏对局
+    private GameService gameService = null;
+
+    public void setGameService(GameService service) {
+        gameService = service;
+    }
+
     @Autowired
     public void setGameMatchService(GameMatchService service) {
         gameMatchService = service;
@@ -59,6 +67,11 @@ public class WebSocketServer {
 
     // 使用单例模式的ObjectMapper, 调试用,结构体转JSON
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    // 用来获取指定用户ID的WebSocketServer实例
+    public static WebSocketServer getUser(Integer userId) {
+        return USERS.get(userId);
+    }
 
     String stringify(Object obj) throws JsonProcessingException {
         return OBJECT_MAPPER.writeValueAsString(obj);
@@ -123,6 +136,14 @@ public class WebSocketServer {
         } else if ("stop-matching".equals(event)) {
             logger.info("用户{}停止匹配", this.user.getId());
             gameMatchService.stopMatching(USERS, this.user);
+        } else if ("move".equals(event)) {
+            Integer direction = jsonObject.getInteger("direction");
+            logger.info("接收到用户{}的移动方向为{}", this.user.getId(), direction);
+            if (gameService.getPlayerA().getId().equals(user.getId())) {
+                gameService.setNextStepA(direction);
+            } else if (gameService.getPlayerB().getId().equals(user.getId())) {
+                gameService.setNextStepB(direction);
+            }
         }
     }
 

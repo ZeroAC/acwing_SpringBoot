@@ -1,8 +1,8 @@
 package com.kob.backend.service.pk.model;
 
+import com.kob.backend.constant.GameMapConstant;
 import lombok.Data;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;
@@ -24,13 +24,10 @@ public class GameMap {
     private static final int[] DY = {0, 1, 0, -1};
 
 
-    public GameMap(
-            @Value("${game-map.rows}") int rows,
-            @Value("${game-map.columns}") int cols,
-            @Value("${game-map.inner-walls-count}") int innerWallsCount) {
-        this.rows = rows;
-        this.cols = cols;
-        this.innerWallsCount = innerWallsCount;
+    public GameMap() {
+        this.rows = GameMapConstant.ROWS.getValue();
+        this.cols = GameMapConstant.COLUMNS.getValue();
+        this.innerWallsCount = GameMapConstant.INNER_WALLS_COUNT.getValue();
         this.g = new boolean[rows][cols];
     }
 
