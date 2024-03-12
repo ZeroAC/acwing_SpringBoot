@@ -35,7 +35,7 @@ public interface GameService {
      *
      * @return 如果游戏结束返回true，否则返回false。
      */
-    boolean judge();
+    void judge();
 
     Player getPlayerA();
 

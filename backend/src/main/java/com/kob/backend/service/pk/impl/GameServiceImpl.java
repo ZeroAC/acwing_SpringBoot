@@ -3,12 +3,14 @@ package com.kob.backend.service.pk.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.kob.backend.consumer.WebSocketServer;
 import com.kob.backend.service.pk.GameService;
+import com.kob.backend.service.pk.model.Cell;
 import com.kob.backend.service.pk.model.Player;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -65,11 +67,11 @@ public class GameServiceImpl implements Runnable, GameService {
         // 一局游戏，地图大小总共13 * 14 = 182 ≈ 200，蛇每三步长一个格子，两条蛇总长度
         // 若200，每三步长一格，最多600步
         for (int i = 0; i < 650; i++) {
-            if (nextStep()) {//5秒内等待游戏双方用户输入
+            if (nextStep()) {//10秒内等待游戏双方用户输入
                 judge();
                 if (status.equals("playing")) {
                     sendMove();
-                } else {
+                } else {//非法输入，游戏结束
                     sendGameResult();
                     break;
                 }
@@ -127,9 +129,50 @@ public class GameServiceImpl implements Runnable, GameService {
         return false;
     }
 
+    //判断蛇A的下一步操作是否合法
+    private boolean checkNextStepValid(List<Cell> cellsA, List<Cell> cellsB) {
+        int n = cellsA.size();
+        Cell cell = cellsA.get(n - 1);
+        // 蛇A的头不能撞墙
+        if (g[cell.x][cell.y]) {
+            return false;
+        }
+        // 蛇A的头不能撞到自己的身体
+        for (int i = 0; i < n - 1; i++) {
+            // 和蛇身是否重合
+            if (cellsA.get(i).x == cell.x && cellsA.get(i).y == cell.y) {
+                return false;
+            }
+        }
+        // 蛇A的头不能撞到B的身体(注意，A和B的头永远撞不到一起)
+        for (int i = 0; i < n - 1; i++) {
+            // 和B蛇身是否重合
+            if (cellsB.get(i).x == cell.x && cellsB.get(i).y == cell.y) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    //判断玩家A和B的下一步操作是否合法，若不合法则给出游戏结果
     @Override
-    public boolean judge() {
-        return false;
+    public void judge() {
+        List<Cell> cellsA = playerA.getCells();
+        List<Cell> cellsB = playerB.getCells();
+
+        boolean validA = checkNextStepValid(cellsA, cellsB);
+        boolean validB = checkNextStepValid(cellsB, cellsA);
+
+        if (!validA || !validB) {
+            status = "finished";
+            if (!validA && !validB) {
+                loser = "all";
+            } else if (!validA) {
+                loser = "A";
+            } else {
+                loser = "B";
+            }
+        }
     }
 
 
@@ -153,9 +196,22 @@ public class GameServiceImpl implements Runnable, GameService {
         }
     }
 
+    public String getGameResult(String player) {
+        if ("all".equals(loser)) {
+            return "all";
+        }
+        return player.equals(loser) ? "lose" : "win";
+    }
+
 
     public void sendGameResult() {
-
+        //向两个Client返回游戏结果
+        JSONObject resp = new JSONObject();
+        resp.put("event", "result");
+        resp.put("gameResult", getGameResult("A"));
+        WebSocketServer.getUser(playerA.getId()).sendMessage(resp.toString());
+        resp.put("gameResult", getGameResult("B"));
+        WebSocketServer.getUser(playerB.getId()).sendMessage(resp.toString());
     }
 
     @Override

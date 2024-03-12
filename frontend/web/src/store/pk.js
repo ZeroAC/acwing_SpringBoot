@@ -15,6 +15,7 @@ export default {
     opponentSx: 0,
     opponentSy: 0,
     gameObject: null, // 对局信息 两条蛇
+    gameResult: "none", // all、win、lose
   },
   getters: {
     socket: (state) => state.socket,
@@ -48,6 +49,9 @@ export default {
     },
     updateGameObject(state, gameObject) {
       state.gameObject = gameObject;
+    },
+    updateGameResult(state, gameResult) {
+      state.gameResult = gameResult;
     },
   },
   actions: {
@@ -86,6 +90,19 @@ export default {
           console.log(
             `本蛇移动方向: ${data.a_direction}, 对手移动方向: ${data.b_direction}`
           );
+        } else if (data.event === "result") {
+          const game = rootState.pk.gameObject;
+          const gameResult = data.gameResult;
+          const [snake0, snake1] = game.snakes;
+          console.log(`output->gameResult`, gameResult);
+
+          if (gameResult === "all" || gameResult === "lose") {
+            snake0.status = "die";
+          }
+          if (data.loser === "all" || gameResult === "win") {
+            snake1.status = "die";
+          }
+          commit("updateGameResult", data.gameResult);
         }
       };
 

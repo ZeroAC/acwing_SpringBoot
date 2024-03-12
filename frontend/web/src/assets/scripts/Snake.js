@@ -61,10 +61,6 @@ export default class Snake extends AcGameObject {
       "新蛇头位置: ",
       this.next_cell
     );
-    //下一位置非法时死亡
-    if (!this.gameMap.check_valid(this.next_cell)) {
-      this.status = "die";
-    }
   }
   //让蛇进行移动
   update_move() {

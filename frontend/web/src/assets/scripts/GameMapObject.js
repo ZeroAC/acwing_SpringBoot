@@ -85,24 +85,6 @@ export default class GameMapObject extends AcGameObject {
       }
     });
   }
-  //检测蛇头是否撞墙或者碰到两条蛇的身体
-  check_valid(cell) {
-    for (let wall of this.walls) {
-      if (cell.r == wall.r && cell.c == wall.c) {
-        return false;
-      }
-    }
-    for (let snake of this.snakes) {
-      let k = snake.cells.length;
-      if (!snake.check_tail_increasing()) k--; //若尾部不再增加，则尾部是可以走的,不做检查
-      for (let i = 1; i < k; i++) {
-        if (cell.r == snake.cells[i].r && cell.c == snake.cells[i].c) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
   update_size() {
     //动态更新地图大小
     //地图边长应该为父元素能包含的最大矩形
