@@ -48,4 +48,13 @@ public class Player {
         }
         return res;
     }
+
+    //便于存储对局信息，将步骤数组转换为字符串
+    public String getStepsString() {
+        StringBuilder res = new StringBuilder(steps.size());
+        for (Integer d : steps) {
+            res.append(d);
+        }
+        return res.toString();
+    }
 }

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kob.backend.dao.RecordDao;
 import com.kob.backend.dao.UserDao;
 import com.kob.backend.pojo.User;
 import com.kob.backend.service.pk.GameMatchService;
@@ -34,7 +35,9 @@ public class WebSocketServer {
     //日志
     private static final Logger logger = LoggerFactory.getLogger(WebSocketServer.class);
     //用户Dao
-    private static volatile UserDao userDao;
+    private static UserDao userDao;
+    //游戏结束时，存储对局信息Dao
+    public static RecordDao recordDao;
     //匹配服务
     private static GameMatchService gameMatchService;
 
@@ -54,6 +57,11 @@ public class WebSocketServer {
     @Autowired
     public void setUserDao(UserDao userDao) {
         WebSocketServer.userDao = userDao;
+    }
+
+    @Autowired
+    public void setRecordDao(RecordDao recordDao) {
+        WebSocketServer.recordDao = recordDao;
     }
 
     //存储所有用户链接(与线程安全有关的哈希表，将userID映射到相应用户的WebSocketServer)

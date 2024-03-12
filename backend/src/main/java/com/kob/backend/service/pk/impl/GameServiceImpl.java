@@ -1,15 +1,18 @@
 package com.kob.backend.service.pk.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.kob.backend.constant.GameMapConstant;
 import com.kob.backend.consumer.WebSocketServer;
 import com.kob.backend.service.pk.GameService;
 import com.kob.backend.service.pk.model.Cell;
 import com.kob.backend.service.pk.model.Player;
+import com.kob.backend.service.pk.model.Record;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -203,6 +206,38 @@ public class GameServiceImpl implements Runnable, GameService {
         return player.equals(loser) ? "lose" : "win";
     }
 
+    //将地图g转为字符串 便于存储
+    private String getMapString() {
+        int rows = GameMapConstant.ROWS.getValue();
+        int columns = GameMapConstant.COLUMNS.getValue();
+        StringBuilder res = new StringBuilder(rows * columns);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                res.append(g[i][j] ? '1' : '0');
+            }
+        }
+        return res.toString();
+    }
+
+    private void saveToDataBase() {
+        Record record = new Record(
+                null,
+                playerA.getId(),
+                playerA.getSx(),
+                playerA.getSy(),
+                playerB.getId(),
+                playerB.getSx(),
+                playerB.getSy(),
+                playerA.getStepsString(),
+                playerB.getStepsString(),
+                getMapString(),
+                loser,
+                new Date()
+        );
+        logger.info("saveToDataBase:{}", record);
+        WebSocketServer.recordDao.insert(record);
+    }
+
 
     public void sendGameResult() {
         //向两个Client返回游戏结果
@@ -212,6 +247,7 @@ public class GameServiceImpl implements Runnable, GameService {
         WebSocketServer.getUser(playerA.getId()).sendMessage(resp.toString());
         resp.put("gameResult", getGameResult("B"));
         WebSocketServer.getUser(playerB.getId()).sendMessage(resp.toString());
+        saveToDataBase();//保存对局结果
     }
 
     @Override
