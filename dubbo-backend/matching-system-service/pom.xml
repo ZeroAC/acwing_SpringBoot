@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.kob</groupId>
+        <artifactId>dubbo-backend</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <artifactId>matching-system-service</artifactId>
+
+    <!-- 依赖声明，列出当前模块需要的库 -->
+    <dependencies>
+        <!-- 依赖于同一项目的另一个模块，即接口定义模块 -->
+        <dependency>
+            <groupId>org.example</groupId>
+            <artifactId>matching-system-api</artifactId>
+            <version>${project.parent.version}</version> <!-- 版本号与父项目一致 -->
+        </dependency>
+
+        <!-- Dubbo的Spring Boot启动器依赖 -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-spring-boot-starter</artifactId> <!-- 不需要指定版本号，因为继承自父POM -->
+        </dependency>
+
+        <!-- Dubbo与ZooKeeper集成依赖，排除了不需要的日志实现 -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-dependencies-zookeeper-curator5</artifactId>
+            <type>pom</type> <!-- 类型为POM -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-reload4j</artifactId> <!-- 排除的依赖项 -->
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Spring Boot的核心启动器依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId> <!-- 不需要指定版本号，因为继承自父POM -->
+        </dependency>
+
+    </dependencies>
+
+
+
+</project>
