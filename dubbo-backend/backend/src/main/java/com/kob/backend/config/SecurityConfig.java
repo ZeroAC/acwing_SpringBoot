@@ -57,6 +57,7 @@ public class SecurityConfig {
                                 // 允许所有用户对所有OPTIONS请求
                                 .antMatchers(HttpMethod.OPTIONS).permitAll()
                                 .antMatchers("/websocket/**").permitAll()
+                                .antMatchers("/pk/startGame/").hasIpAddress("127.0.0.1")   // 仅允许本地访问，微服务间调用
                                 // 任何请求都需要认证
                                 .anyRequest().authenticated())
                 // 添加自定义JWT过滤器

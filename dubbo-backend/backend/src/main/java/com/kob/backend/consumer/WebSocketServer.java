@@ -4,12 +4,15 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kob.backend.constant.GameMapConstant;
 import com.kob.backend.dao.RecordDao;
 import com.kob.backend.dao.UserDao;
 import com.kob.backend.pojo.User;
 import com.kob.backend.service.dubbo.MatchingService;
-import com.kob.backend.service.pk.GameMatchService;
 import com.kob.backend.service.pk.GameService;
+import com.kob.backend.service.pk.impl.GameServiceImpl;
+import com.kob.backend.service.pk.model.GameMap;
+import com.kob.backend.service.pk.model.Player;
 import com.kob.backend.utils.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +23,10 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * WebSocket服务端点类。
@@ -39,13 +45,23 @@ public class WebSocketServer {
     private static UserDao userDao;
     //游戏结束时，存储对局信息Dao
     public static RecordDao recordDao;
-    //匹配服务
-    private static GameMatchService gameMatchService;
 
     private static MatchingService matchingService;
 
+    //最大游戏线程数
+    private static final int MAX_GAME_THREADS = 100; // Adjust this value based on your server capacity
+    //游戏线程池
+    private static final ExecutorService gameExecutorService = Executors.newFixedThreadPool(MAX_GAME_THREADS);
+    //地图数据生成
+    private static GameMap gameMap;
+
     @Autowired
-    public void setAllDubboService(MatchingService service) {
+    public void setGameMap(GameMap gameMap) {
+        WebSocketServer.gameMap = gameMap;
+    }
+
+    @Autowired
+    public void setMatchingService(MatchingService service) {
         matchingService = service;
     }
 
@@ -54,11 +70,6 @@ public class WebSocketServer {
 
     public void setGameService(GameService service) {
         gameService = service;
-    }
-
-    @Autowired
-    public void setGameMatchService(GameMatchService service) {
-        gameMatchService = service;
     }
 
     // 静态 setter 方法来设置共享的 UserDao 实例
@@ -83,6 +94,7 @@ public class WebSocketServer {
 
     // 使用单例模式的ObjectMapper, 调试用,结构体转JSON
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
 
     // 用来获取指定用户ID的WebSocketServer实例
     public static WebSocketServer getUser(Integer userId) {
@@ -148,12 +160,11 @@ public class WebSocketServer {
         String event = jsonObject.getString("event");
         if ("start-matching".equals(event)) {
             logger.info("用户{}开始匹配", this.user.getId());
+            //向匹配微服务添加一个用户，当微服务匹配成功时，则会调用startGame接口来启动游戏
             matchingService.addPlayer(this.user.getId(), 1500);
-            gameMatchService.startMatching(USERS, this.user);
         } else if ("stop-matching".equals(event)) {
             logger.info("用户{}停止匹配", this.user.getId());
             matchingService.removePlayer(this.user.getId());
-            gameMatchService.stopMatching(USERS, this.user);
         } else if ("move".equals(event)) {
             Integer direction = jsonObject.getInteger("direction");
             logger.info("接收到用户{}的移动方向为{}", this.user.getId(), direction);
@@ -163,6 +174,49 @@ public class WebSocketServer {
                 gameService.setNextStepB(direction);
             }
         }
+    }
+    
+    //匹配完成后a和b开始一局游戏
+    public static void startGame(Integer aId, Integer bId){
+        logger.info("匹配成功，aId: {}, bId: {}", aId, bId);
+        //生成一个新地图
+        boolean[][] g = gameMap.generateMap();
+        //生成对局玩家信息
+        Player playerA = new Player(aId, GameMapConstant.ROWS.getValue() - 2, 1, new ArrayList<>());
+        Player playerB = new Player(bId, 1, GameMapConstant.COLUMNS.getValue() - 2, new ArrayList<>());
+        User a = userDao.selectById(aId);
+        User b = userDao.selectById(bId);
+        //发送匹配成功消息及对局信息
+        sendMatchMessage(a, b, playerA, playerB, g);
+        sendMatchMessage(b, a, playerB, playerA, g);
+        //新开一局游戏
+        GameService openGameService = new GameServiceImpl(playerA, playerB, g);
+        //提交游戏到线程池中执行
+        gameExecutorService.submit((Runnable) openGameService);
+        //设置双方的游戏对局
+        USERS.get(aId).setGameService(openGameService);
+        USERS.get(bId).setGameService(openGameService);
+    }
+
+
+    //发送匹配成功的对手消息给双方
+    private static void sendMatchMessage(User a, User b, Player playerA, Player playerB, boolean[][] g) {
+        JSONObject resp = new JSONObject();
+        resp.put("event", "start-matching"); // 事件类型
+        resp.put("opponentUsername", b.getUsername()); // 对手的用户名
+        resp.put("opponentPhoto", b.getPhoto()); // 对手的头像
+        //游戏对局信息
+        JSONObject gameResp = new JSONObject();//对局游戏信息
+        gameResp.put("map", g);
+        gameResp.put("id", playerA.getId());
+        gameResp.put("sx", playerA.getSx());
+        gameResp.put("sy", playerA.getSy());
+        gameResp.put("opponentId", playerB.getId());
+        gameResp.put("opponentSx", playerB.getSx());
+        gameResp.put("opponentSy", playerB.getSy());
+        resp.put("game", gameResp);
+        // 通过 WebSocket 向a发送匹配成功的消息
+        USERS.get(a.getId()).sendMessage(resp.toJSONString());
     }
 
 
