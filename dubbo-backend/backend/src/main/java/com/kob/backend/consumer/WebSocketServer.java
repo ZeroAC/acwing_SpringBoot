@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kob.backend.dao.RecordDao;
 import com.kob.backend.dao.UserDao;
 import com.kob.backend.pojo.User;
+import com.kob.backend.service.dubbo.MatchingService;
 import com.kob.backend.service.pk.GameMatchService;
 import com.kob.backend.service.pk.GameService;
 import com.kob.backend.utils.JwtUtil;
@@ -40,6 +41,13 @@ public class WebSocketServer {
     public static RecordDao recordDao;
     //匹配服务
     private static GameMatchService gameMatchService;
+
+    private static MatchingService matchingService;
+
+    @Autowired
+    public void setAllDubboService(MatchingService service) {
+        matchingService = service;
+    }
 
     //当前的用户所在的游戏对局
     private GameService gameService = null;
@@ -140,9 +148,11 @@ public class WebSocketServer {
         String event = jsonObject.getString("event");
         if ("start-matching".equals(event)) {
             logger.info("用户{}开始匹配", this.user.getId());
+            matchingService.addPlayer(this.user.getId(), 1500);
             gameMatchService.startMatching(USERS, this.user);
         } else if ("stop-matching".equals(event)) {
             logger.info("用户{}停止匹配", this.user.getId());
+            matchingService.removePlayer(this.user.getId());
             gameMatchService.stopMatching(USERS, this.user);
         } else if ("move".equals(event)) {
             Integer direction = jsonObject.getInteger("direction");

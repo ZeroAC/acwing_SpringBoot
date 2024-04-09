@@ -1,0 +1,8 @@
+dubbo:
+  application:
+    name: matching-system-service # 应用名称
+  protocol:
+    name: dubbo # 通信协议名称
+    port: -1 # 协议端口，-1表示自动分配一个空闲端口
+  registry:
+    address: zookeeper://${zookeeper.address:127.0.0.1}:2181 # 注册中心的配置
